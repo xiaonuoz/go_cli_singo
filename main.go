@@ -45,9 +45,12 @@ func main() {
 			if d.Tok == token.TYPE {
 				for _, spec := range d.Specs {
 					if ts, ok := spec.(*ast.TypeSpec); ok {
-						var fields []string
+						var structInfo generate.StructInfo
+						structInfo.Name = ts.Name.String()
 						if st, ok := ts.Type.(*ast.StructType); ok {
-							for _, field := range st.Fields.List {
+
+							for index, field := range st.Fields.List {
+								fieldComment := node.Comments[index].Text()
 								for _, fieldName := range field.Names {
 									// 生成tag，符合驼峰命名
 									entries := camelcase.Split(fieldName.Name)
@@ -56,11 +59,15 @@ func main() {
 										tagNameArr = append(tagNameArr, strings.ToLower(v))
 									}
 									tagName := strings.Join(tagNameArr, "_")
-									fields = append(fields, fmt.Sprintf("%s %s `json:\"%s\" form:\"%s\"`", fieldName.Name, field.Type, tagName, tagName))
+
+									structInfo.Field = append(structInfo.Field, fmt.Sprint(fieldName.Name))
+									structInfo.FieldType = append(structInfo.FieldType, fmt.Sprint(field.Type))
+									structInfo.Tsgs = append(structInfo.Tsgs, tagName)
+									structInfo.Comments = append(structInfo.Comments, strings.ReplaceAll(fieldComment, "\n", ""))
 								}
 							}
 						}
-						StructInfoArr = append(StructInfoArr, generate.StructInfo{Name: ts.Name.String(), Field: fields})
+						StructInfoArr = append(StructInfoArr, structInfo)
 					}
 				}
 			}
@@ -71,7 +78,7 @@ func main() {
 		panic("文件中不存在结构体！")
 	}
 
-	fmt.Println(StructInfoArr)
+	fmt.Printf("%+v", StructInfoArr)
 
 	app.Commands = []cli.Command{
 		{

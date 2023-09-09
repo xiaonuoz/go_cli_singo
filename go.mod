@@ -1,6 +1,6 @@
 module github.com/XiaoNuoZ/go_cli_singo_generate_code
 
-go 1.18
+go 1.17
 
 require (
 	github.com/fatih/camelcase v1.0.0

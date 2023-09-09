@@ -1,21 +1,8 @@
 package main
 
-// user1 测试
-type User struct {
-	UserName       string
-	PasswordDigest string
-}
+type MyStruct struct {
+	// 注释1
+	Field1 int
 
-type User1 struct {
-	UserName       string
-	PasswordDigest string
-}
-
-type User3 struct {
-	UserName       string
-	PasswordDigest string
-}
-
-func Test() {
-
+	Field2 string // 注释2
 }
