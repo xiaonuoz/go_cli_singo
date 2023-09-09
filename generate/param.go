@@ -40,13 +40,19 @@ func GenerateParamCode(structType []StructInfo) {
 		text.WriteString("\tPage\tuint\t`json:\"page\" form:\"page\"`\n")
 		text.WriteString("}\n")
 
+		// 生成list param
+		text.WriteString(fmt.Sprintf("\n// %sListParam 查询参数\n", st.Name))
+		text.WriteString(fmt.Sprintf("type %sListParam struct {\n", st.Name))
+		text.WriteString(rangeField.String())
+		text.WriteString("}\n")
+
 		// 生成delete param
-		text.WriteString(fmt.Sprintf("\n// %sDeletehParam 删除参数\n", st.Name))
-		text.WriteString(fmt.Sprintf("type %sDeletehParam struct {\n", st.Name))
+		text.WriteString(fmt.Sprintf("\n// %sDeleteParam 删除参数\n", st.Name))
+		text.WriteString(fmt.Sprintf("type %sDeleteParam struct {\n", st.Name))
 		text.WriteString("\tID\tuint\t`json:\"id\" form:\"id\"`\n")
 		text.WriteString("}\n")
 
-		f, err := os.OpenFile("generate/param_ex.go", os.O_CREATE|os.O_RDWR|os.O_APPEND, 0644)
+		f, err := os.OpenFile(fmt.Sprintf("%s.go", st.TableName), os.O_CREATE|os.O_RDWR|os.O_APPEND, 0644)
 		if err != nil {
 			return
 		}

@@ -42,13 +42,14 @@ func GenerateModelCode(structType []StructInfo) {
 			}
 		}
 
-		// if err := genModelSQL(st.TableName, st, text, rangeField, rangeField1); err != nil {
-		// 	panic(fmt.Errorf("genModelSQL err:%v", err))
-		// }
-
 		if err := genModelQuery(text, st.TableName, rangeField2, rangeFieldWhere); err != nil {
 			panic(fmt.Errorf("genModelQuery err:%v", err))
 		}
+
+		if err := genModelSQL(st, text, rangeField, rangeField1); err != nil {
+			panic(fmt.Errorf("genModelSQL err:%v", err))
+		}
+
 	}
 
 }
@@ -102,7 +103,7 @@ func (c %vQuery) preload() func(db *gorm.DB) *gorm.DB {
 `, tableName, tableName))
 	fmt.Println(text.String())
 
-	f, err := os.OpenFile("generate/model.ex.go", os.O_CREATE|os.O_RDWR|os.O_APPEND, 0644)
+	f, err := os.OpenFile(fmt.Sprintf("query_%s.go", tableName), os.O_CREATE|os.O_RDWR|os.O_APPEND, 0644)
 	if err != nil {
 		return err
 	}
@@ -111,12 +112,12 @@ func (c %vQuery) preload() func(db *gorm.DB) *gorm.DB {
 	return nil
 }
 
-func genModelSQL(tableName string, st StructInfo, text strings.Builder, rangeField strings.Builder, rangeField1 strings.Builder) error {
-	text.WriteString(fmt.Sprintf("type %sSQLRepo struct {\n\tdb *gorm.DB\n}\n", tableName))
+func genModelSQL(st StructInfo, text strings.Builder, rangeField strings.Builder, rangeField1 strings.Builder) error {
+	text.WriteString(fmt.Sprintf("type %sSQLRepo struct {\n\tdb *gorm.DB\n}\n", st.TableName))
 
-	text.WriteString(fmt.Sprintf("func (repo %sSQLRepo) GetByID(id uint) (*%s, error) {\n\tq := %sQuery{\n\t\tID: id,\n\t}\n\treturn repo.get(q)\n}\n\n", tableName, st.Name, tableName))
+	text.WriteString(fmt.Sprintf("func (repo %sSQLRepo) GetByID(id uint) (*%s, error) {\n\tq := %sQuery{\n\t\tID: id,\n\t}\n\treturn repo.get(q)\n}\n\n", st.TableName, st.Name, st.TableName))
 
-	text.WriteString(fmt.Sprintf("func (repo %vSQLRepo) Create(param serializer.%vCreateParam) (*%v, error) {\n", tableName, st.Name, st.Name))
+	text.WriteString(fmt.Sprintf("func (repo %vSQLRepo) Create(param serializer.%vCreateParam) (*%v, error) {\n", st.TableName, st.Name, st.Name))
 	text.WriteString(fmt.Sprintf(`	obj := &%v{
 %v
 	}
@@ -147,7 +148,7 @@ func genModelSQL(tableName string, st StructInfo, text strings.Builder, rangeFie
 	return obj, nil
 }
 
-`, tableName, st.Name, st.Name, tableName, rangeField1.String(), st.Name))
+`, st.TableName, st.Name, st.Name, st.TableName, rangeField1.String(), st.Name))
 
 	text.WriteString(fmt.Sprintf(`func (repo %sSQLRepo) Search(param serializer.%sSearchParam) ([]%s, uint, error) {
 
@@ -174,7 +175,7 @@ func genModelSQL(tableName string, st StructInfo, text strings.Builder, rangeFie
 	return objArr, count, nil
 }
 
-`, tableName, st.Name, st.Name, tableName, rangeField.String(), st.Name, st.Name))
+`, st.TableName, st.Name, st.Name, st.TableName, rangeField.String(), st.Name, st.Name))
 
 	text.WriteString(fmt.Sprintf(`func (repo %sSQLRepo) Delete(param serializer.%sDeleteParam) error {
 
@@ -191,21 +192,37 @@ func genModelSQL(tableName string, st StructInfo, text strings.Builder, rangeFie
 	return nil
 }
 
-`, tableName, st.Name, tableName, st.Name))
+`, st.TableName, st.Name, st.TableName, st.Name))
+
+	text.WriteString(fmt.Sprintf(`func (repo %sSQLRepo) List(param serializer.%sListParam) ([]%s, error) {
+		query := %sQuery{
+	%s
+		}
+	
+		var objArr []%s
+		db := repo.db.Scopes(query.where(), query.preload(), query.order())
+	
+		if err := db.Find(&objArr).Error; err != nil {
+			return nil, fmt.Errorf("List %s err: %%v", err)
+		}
+		return objArr, nil
+	}
+	
+	`, st.TableName, st.Name, st.Name, st.TableName, rangeField.String(), st.Name, st.Name))
 
 	text.WriteString(fmt.Sprintf(`func (repo %sSQLRepo) get(query %sQuery) (*%s, error) {
 
 	obj := &%s{}
 	if err := repo.db.Scopes(query.where(), query.preload()).First(obj).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
-			return nil, fmt.Errorf("get %s err: %v", err)
+			return nil,nil
 		}
 		return nil, fmt.Errorf("get %s err: %%v", err)
 	}
 	return obj, nil
 }
 
-`, tableName, tableName, st.Name, st.Name, st.Name, "%v", st.Name))
+`, st.TableName, st.TableName, st.Name, st.Name, st.Name))
 
 	text.WriteString(fmt.Sprintf(`func (repo %sSQLRepo) count(query %sQuery) (uint, error) {
 
@@ -215,9 +232,9 @@ func genModelSQL(tableName string, st StructInfo, text strings.Builder, rangeFie
 		}
 		return uint(count), nil
 	}
-	`, tableName, tableName, st.Name, st.Name))
+	`, st.TableName, st.TableName, st.Name, st.Name))
 
-	f, err := os.OpenFile("generate/model.ex.go", os.O_CREATE|os.O_RDWR|os.O_APPEND, 0644)
+	f, err := os.OpenFile(fmt.Sprintf("sql_repo_%s.go", st.TableName), os.O_CREATE|os.O_RDWR|os.O_APPEND, 0644)
 	if err != nil {
 		return err
 	}

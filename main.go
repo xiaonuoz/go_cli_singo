@@ -99,7 +99,7 @@ func main() {
 		panic("文件中不存在结构体！")
 	}
 
-	generate.GenerateServiceCode(StructInfoArr)
+	generate.GenerateSDKCode(StructInfoArr)
 
 	// app.Commands = []cli.Command{
 	// 	{

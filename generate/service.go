@@ -9,7 +9,7 @@ import (
 func GenerateServiceCode(structType []StructInfo) {
 	var text strings.Builder
 	for _, st := range structType {
-		text.WriteString("package serializer\n")
+		text.WriteString(fmt.Sprintf("package %v\n", st.TableName))
 		text.WriteString(fmt.Sprintf(`// %s Service
 type %s struct {
 }
@@ -41,10 +41,10 @@ type %s struct {
 	return serializer.ResponseOk(struct {
 			%s []model.%s %s
 			Pagination *serializer.Pagination %s
-		}{value, count})
+		}{value, pagination})
 }
 
-`, st.Name, "Search", st.Name, "Search", st.Name, "Search", st.Name, st.Name, fmt.Sprintf("`json:\"%v\" form:\"%v\"`", "array", "array"), "`json:\"pagination\" form:\"pagination\"`"))
+`, st.Name, "Search", st.Name, "Search", st.Name, "Search", st.Name, st.Name, "`json:\"array\" form:\"array\"`", "`json:\"pagination\" form:\"pagination\"`"))
 
 		funcFormat := `func (s *%s) %s(param serializer.%s%sParam) *serializer.Response {
 	value, err := model.%sRepo.%s(param)
@@ -55,6 +55,7 @@ type %s struct {
 }
 
 `
+		text.WriteString(fmt.Sprintf(funcFormat, st.Name, "List", st.Name, "List", st.Name, "List"))
 		text.WriteString(fmt.Sprintf(funcFormat, st.Name, "Create", st.Name, "Create", st.Name, "Create"))
 		text.WriteString(fmt.Sprintf(funcFormat, st.Name, "Modify", st.Name, "Modify", st.Name, "Modify"))
 		text.WriteString(fmt.Sprintf(`func (s *%s) %s(param serializer.%s%sParam) *serializer.Response {
