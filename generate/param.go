@@ -15,7 +15,7 @@ func GenerateParamCode(structType []StructInfo) {
 			rangeField.WriteString(fmt.Sprintf("\t%s\t%s\t%s\t%s\n", field, st.FieldType[index], fmt.Sprintf("`json:\"%s\" form:\"%s\"`", st.Tsgs[index], st.Tsgs[index]), st.Comments[index]))
 		}
 
-		text.WriteString("package generate\n")
+		text.WriteString("package serializer\n")
 
 		// 生成create param
 		text.WriteString(fmt.Sprintf("\n// %sCreateParam 创建参数\n", st.Name))

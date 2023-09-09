@@ -15,7 +15,6 @@ var (
 func GenerateModelCode(structType []StructInfo) {
 	var text strings.Builder
 	for _, st := range structType {
-		tableName := strings.ToLower(st.Name[:1]) + st.Name[1:]
 
 		// 遍历字段
 		var rangeField strings.Builder
@@ -43,11 +42,11 @@ func GenerateModelCode(structType []StructInfo) {
 			}
 		}
 
-		// if err := genModelSQL(tableName, st, text, rangeField, rangeField1); err != nil {
+		// if err := genModelSQL(st.TableName, st, text, rangeField, rangeField1); err != nil {
 		// 	panic(fmt.Errorf("genModelSQL err:%v", err))
 		// }
 
-		if err := genModelQuery(text, tableName, rangeField2, rangeFieldWhere); err != nil {
+		if err := genModelQuery(text, st.TableName, rangeField2, rangeFieldWhere); err != nil {
 			panic(fmt.Errorf("genModelQuery err:%v", err))
 		}
 	}
@@ -210,13 +209,13 @@ func genModelSQL(tableName string, st StructInfo, text strings.Builder, rangeFie
 
 	text.WriteString(fmt.Sprintf(`func (repo %sSQLRepo) count(query %sQuery) (uint, error) {
 
-	var count int64
-	if err := repo.db.Model(&%s{}).Scopes(query.where()).Count(&count).Error; err != nil {
-		return 0, fmt.Errorf("count %s err: %%v", err)
+		var count int64
+		if err := repo.db.Model(&%s{}).Scopes(query.where()).Count(&count).Error; err != nil {
+			return 0, fmt.Errorf("count %s err: %%v", err)
+		}
+		return uint(count), nil
 	}
-	return uint(count), nil
-}
-`, tableName, tableName, st.Name, st.Name))
+	`, tableName, tableName, st.Name, st.Name))
 
 	f, err := os.OpenFile("generate/model.ex.go", os.O_CREATE|os.O_RDWR|os.O_APPEND, 0644)
 	if err != nil {

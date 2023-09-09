@@ -50,6 +50,8 @@ func main() {
 						if len(structInfo.Name) < 2 {
 							panic("结构体名不能单字符")
 						}
+						structInfo.TableName = strings.ToLower(structInfo.Name[:1]) + structInfo.Name[1:]
+
 						if st, ok := ts.Type.(*ast.StructType); ok {
 
 							for _, field := range st.Fields.List {
@@ -97,7 +99,7 @@ func main() {
 		panic("文件中不存在结构体！")
 	}
 
-	generate.GenerateModelCode(StructInfoArr)
+	generate.GenerateServiceCode(StructInfoArr)
 
 	// app.Commands = []cli.Command{
 	// 	{
