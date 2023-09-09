@@ -2,9 +2,7 @@ package generate
 
 var (
 	modelText = `
-package serializer
 
-// 创建
 	`
 )
 

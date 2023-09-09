@@ -5,6 +5,7 @@ type StructInfo struct {
 	Field     []string
 	FieldType []string
 
-	Tsgs     []string
-	Comments []string
+	Tsgs       []string
+	Comments   []string
+	SourceFile string
 }

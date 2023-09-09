@@ -67,6 +67,7 @@ func main() {
 								}
 							}
 						}
+						structInfo.SourceFile = sourceFilePath
 						StructInfoArr = append(StructInfoArr, structInfo)
 					}
 				}
@@ -79,38 +80,31 @@ func main() {
 	}
 
 	fmt.Printf("%+v", StructInfoArr)
+	generate.GenerateParamCode(StructInfoArr)
 
-	app.Commands = []cli.Command{
-		{
-			Name:    "init",
-			Aliases: []string{"gen"},
-			Usage:   "init 生成代码，不带-和--",
-			Flags: []cli.Flag{
-				cli.StringFlag{
-					Name:  "param",
-					Usage: "生成param，--param",
-				},
-				// Add more flags for customization if needed
-			},
-			Action: func(c *cli.Context) error {
-				// structName := c.String("param")
-				generate.GenerateParamCode(StructInfoArr)
+	// app.Commands = []cli.Command{
+	// 	{
+	// 		Name:    "init",
+	// 		Aliases: []string{"gen"},
+	// 		Usage:   "init 生成代码，不带-和--",
+	// 		Flags: []cli.Flag{
+	// 			cli.StringFlag{
+	// 				Name:  "param",
+	// 				Usage: "生成param，--param",
+	// 			},
+	// 			// Add more flags for customization if needed
+	// 		},
+	// 		Action: func(c *cli.Context) error {
+	// 			// structName := c.String("param")
+	// 			generate.GenerateParamCode(StructInfoArr)
 
-				return nil
-			},
-		},
-	}
+	// 			return nil
+	// 		},
+	// 	},
+	// }
 
-	err = app.Run(os.Args)
-	if err != nil {
-		fmt.Println(err)
-	}
-}
-
-func generateCode(structName string) string {
-	// Implement the code generation logic based on the structName
-	// This can include creating methods, boilerplate code, etc.
-
-	// For demonstration purposes, let's generate a simple method.
-	return fmt.Sprintf("package sdk\nfunc (s *%s) SomeMethod() {\n\t// TODO: Implement this method\n}\n", structName)
+	// err = app.Run(os.Args)
+	// if err != nil {
+	// 	fmt.Println(err)
+	// }
 }
