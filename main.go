@@ -47,6 +47,9 @@ func main() {
 					if ts, ok := spec.(*ast.TypeSpec); ok {
 						var structInfo generate.StructInfo
 						structInfo.Name = ts.Name.String()
+						if len(structInfo.Name) < 2 {
+							panic("结构体名不能单字符")
+						}
 						if st, ok := ts.Type.(*ast.StructType); ok {
 
 							for _, field := range st.Fields.List {
@@ -94,8 +97,7 @@ func main() {
 		panic("文件中不存在结构体！")
 	}
 
-	fmt.Printf("%+v", StructInfoArr)
-	generate.GenerateParamCode(StructInfoArr)
+	generate.GenerateModelCode(StructInfoArr)
 
 	// app.Commands = []cli.Command{
 	// 	{
