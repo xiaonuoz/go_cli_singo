@@ -24,7 +24,7 @@ func GenerateParamCode(structType []StructInfo) {
 		text.WriteString("}\n")
 
 		// 生成modify param
-		text.WriteString(fmt.Sprintf("\n// %sModifyParam 创建参数\n", st.Name))
+		text.WriteString(fmt.Sprintf("\n// %sModifyParam 修改参数\n", st.Name))
 		text.WriteString(fmt.Sprintf("type %sModifyParam struct {\n", st.Name))
 		// text.WriteString(fmt.Sprintf("\t%s\t%s\t%s\t// %s\n", field, st.FieldType[index], fmt.Sprintf("`json:\"%s\" form:\"%s\"`", st.Tsgs[index], st.Tsgs[index]), st.Comments[index]))
 		// 遍历字段

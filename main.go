@@ -49,8 +49,23 @@ func main() {
 						structInfo.Name = ts.Name.String()
 						if st, ok := ts.Type.(*ast.StructType); ok {
 
-							for index, field := range st.Fields.List {
-								fieldComment := node.Comments[index].Text()
+							for _, field := range st.Fields.List {
+								var comment string
+								// 如果注释在字段上面则此变量有值
+								if field.Doc != nil {
+									for _, c := range field.Doc.List {
+										comment = c.Text
+									}
+								}
+
+								// 如果注释在字段后面则此变量有值
+								if field.Comment != nil {
+									for _, c := range field.Comment.List {
+										comment = c.Text
+									}
+								}
+
+								fieldComment := comment
 								for _, fieldName := range field.Names {
 									// 生成tag，符合驼峰命名
 									entries := camelcase.Split(fieldName.Name)
