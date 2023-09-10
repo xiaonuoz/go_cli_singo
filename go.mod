@@ -1,4 +1,4 @@
-module github.com/XiaoNuoZ/go_cli_singo_generate_code
+module github.com/xiaonuoz/go_cli_singo_generate_code
 
 go 1.17
 
