@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/XiaoNuoZ/go_cli_singo_generate_code/generate"
+	"github.com/xiaonuoz/go_cli_singo_generate_code/generate"
 	"github.com/urfave/cli/v2"
 )
 
