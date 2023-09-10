@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-func GenerateHanderCode(structType []StructInfo) {
+func GenerateHandlerCode(structType []StructInfo) {
 	var text strings.Builder
 	for _, st := range structType {
 		text.WriteString("package api\n")
@@ -51,9 +51,9 @@ func get%sByID(c *gin.Context) {
 		if err != nil && !os.IsExist(err) {
 			panic(err)
 		}
-		f, err := os.OpenFile(filepath.Join(path, fmt.Sprintf("%s_hander.go", st.TableName)), os.O_CREATE|os.O_RDWR|os.O_APPEND, 0644)
+		f, err := os.OpenFile(filepath.Join(path, fmt.Sprintf("%s_handler.go", st.TableName)), os.O_CREATE|os.O_RDWR|os.O_APPEND, 0644)
 		if err != nil {
-			panic(fmt.Errorf("GenerateHanderCode err:%v", err))
+			panic(fmt.Errorf("GenerateHandlerCode err:%v", err))
 		}
 		defer f.Close()
 		f.Write([]byte(text.String()))
