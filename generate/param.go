@@ -54,7 +54,7 @@ func GenerateParamCode(structType []StructInfo) {
 
 		f, err := os.OpenFile(fmt.Sprintf("%s.go", st.TableName), os.O_CREATE|os.O_RDWR|os.O_APPEND, 0644)
 		if err != nil {
-			return
+			panic(fmt.Errorf("GenerateParamCode err:%v", err))
 		}
 		defer f.Close()
 		f.Write([]byte(text.String()))

@@ -189,7 +189,7 @@ const (
 
 		f, err := os.OpenFile(fmt.Sprintf("%s.go", st.TableName), os.O_CREATE|os.O_RDWR|os.O_APPEND, 0644)
 		if err != nil {
-			return
+			panic(fmt.Errorf("GenerateSDKCode err:%v", err))
 		}
 		defer f.Close()
 		f.Write([]byte(text.String()))

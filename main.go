@@ -10,14 +10,10 @@ import (
 
 	"github.com/XiaoNuoZ/go_cli_singo_generate_code/generate"
 	"github.com/fatih/camelcase"
-	"github.com/urfave/cli"
+	"github.com/urfave/cli/v2"
 )
 
 func main() {
-	app := cli.NewApp()
-	app.Name = "Code Generator"
-	app.Usage = "Generate code based on Golang struct definitions"
-	app.Version = "1.0.0"
 
 	// 获取工作路径
 	// workDir := "github.com/XiaoNuoZ/go_cli_singo_generate_code"
@@ -99,31 +95,73 @@ func main() {
 		panic("文件中不存在结构体！")
 	}
 
-	generate.GenerateSDKCode(StructInfoArr)
+	app := &cli.App{
+		Name:  "singo_make_api",
+		Usage: "make singo project api",
+		Commands: []*cli.Command{
+			{
+				Name:    "param",
+				Aliases: []string{"p"},
+				Usage:   "生成param",
+				Action: func(c *cli.Context) error {
+					generate.GenerateParamCode(StructInfoArr)
+					return nil
+				},
+			},
+			{
+				Name:    "model",
+				Aliases: []string{"m"},
+				Usage:   "增加model crud方法",
+				Action: func(c *cli.Context) error {
+					generate.GenerateModelCode(StructInfoArr)
+					return nil
+				},
+			},
+			{
+				Name:    "service",
+				Aliases: []string{"s"},
+				Usage:   "生成service",
+				Action: func(c *cli.Context) error {
+					generate.GenerateServiceCode(StructInfoArr)
+					return nil
+				},
+			},
+			{
+				Name:    "hander",
+				Aliases: []string{"h"},
+				Usage:   "生成hander",
+				Action: func(c *cli.Context) error {
+					generate.GenerateHanderCode(StructInfoArr)
+					return nil
+				},
+			},
+			{
+				Name:  "sdk",
+				Usage: "生成sdk",
+				Action: func(c *cli.Context) error {
+					generate.GenerateSDKCode(StructInfoArr)
+					return nil
+				},
+			},
+			{
+				Name:  "all",
+				Usage: "全部生成",
+				Action: func(c *cli.Context) error {
+					generate.GenerateParamCode(StructInfoArr)
+					generate.GenerateModelCode(StructInfoArr)
+					generate.GenerateServiceCode(StructInfoArr)
+					generate.GenerateHanderCode(StructInfoArr)
+					generate.GenerateSDKCode(StructInfoArr)
+					return nil
+				},
+			},
+			// 添加其他命令...
+		},
+	}
 
-	// app.Commands = []cli.Command{
-	// 	{
-	// 		Name:    "init",
-	// 		Aliases: []string{"gen"},
-	// 		Usage:   "init 生成代码，不带-和--",
-	// 		Flags: []cli.Flag{
-	// 			cli.StringFlag{
-	// 				Name:  "param",
-	// 				Usage: "生成param，--param",
-	// 			},
-	// 			// Add more flags for customization if needed
-	// 		},
-	// 		Action: func(c *cli.Context) error {
-	// 			// structName := c.String("param")
-	// 			generate.GenerateParamCode(StructInfoArr)
-
-	// 			return nil
-	// 		},
-	// 	},
-	// }
-
-	// err = app.Run(os.Args)
-	// if err != nil {
-	// 	fmt.Println(err)
-	// }
+	// 启动命令行应用程序
+	err = app.Run(os.Args)
+	if err != nil {
+		fmt.Println(err)
+	}
 }

@@ -72,7 +72,7 @@ type %s struct {
 
 		f, err := os.OpenFile("generate/service_ex.go", os.O_CREATE|os.O_RDWR|os.O_APPEND, 0644)
 		if err != nil {
-			return
+			panic(fmt.Errorf("GenerateServiceCode err:%v", err))
 		}
 		defer f.Close()
 		f.Write([]byte(text.String()))
