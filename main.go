@@ -14,36 +14,38 @@ import (
 )
 
 func main() {
-	// fmt.Print("项目地址: ")
-	// _, err := fmt.Scan(&generate.ProjectDir)
+	// generate.ProjectDir = `D:\go\src\wenfeng\hezui\userkit`
+	// var sourceFilePath string = `D:\go\src\wenfeng\hezui\userkit\model\class\test.go`
 
-	// if err != nil || len(generate.ProjectDir) == 0 {
-	// 	fmt.Println("输入错误:", err)
-	// 	return
-	// }
+	fmt.Print("项目地址: ")
+	_, err := fmt.Scan(&generate.ProjectDir)
 
-	// _, err = os.Stat(generate.ProjectDir)
-	// if err != nil || os.IsNotExist(err) {
-	// 	fmt.Println("地址错误:", err)
-	// 	return
-	// }
-	generate.ProjectDir = `D:\go\src\wenfeng\hezui\userkit`
+	if err != nil || len(generate.ProjectDir) == 0 {
+		fmt.Println("输入错误:", err)
+		return
+	}
+
+	_, err = os.Stat(generate.ProjectDir)
+	if err != nil || os.IsNotExist(err) {
+		fmt.Println("地址错误:", err)
+		return
+	}
 
 	// 获取工作路径
-	var sourceFilePath string = `D:\go\src\wenfeng\hezui\userkit\model\class\test.go`
-	// fmt.Print("model文件地址: ")
-	// _, err = fmt.Scan(&sourceFilePath)
+	var sourceFilePath string
+	fmt.Print("model文件地址: ")
+	_, err = fmt.Scan(&sourceFilePath)
 
-	// if err != nil || len(sourceFilePath) == 0 {
-	// 	fmt.Println("输入错误:", err)
-	// 	return
-	// }
+	if err != nil || len(sourceFilePath) == 0 {
+		fmt.Println("输入错误:", err)
+		return
+	}
 
-	// _, err = os.Stat(sourceFilePath)
-	// if err != nil || os.IsNotExist(err) {
-	// 	fmt.Println("地址错误:", err)
-	// 	return
-	// }
+	_, err = os.Stat(sourceFilePath)
+	if err != nil || os.IsNotExist(err) {
+		fmt.Println("地址错误:", err)
+		return
+	}
 
 	// 读取源代码文件
 	sourceFile, err := os.ReadFile(sourceFilePath)
