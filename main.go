@@ -20,7 +20,10 @@ func main() {
 				Usage:   "生成param",
 				Action: func(c *cli.Context) error {
 					generate.ProjectDir = c.Args().Get(1)
-					generate.GenerateParamCode(generate.GetStructInfoArr(c.Args().Get(0)))
+					err := generate.GenerateParamCode(generate.GetStructInfoArr(c.Args().Get(0)))
+					if err != nil {
+						fmt.Println(err)
+					}
 					return nil
 				},
 			},
@@ -30,7 +33,10 @@ func main() {
 				Usage:   "增加model crud方法",
 				Action: func(c *cli.Context) error {
 					generate.ProjectDir = c.Args().Get(1)
-					generate.GenerateModelCode(generate.GetStructInfoArr(c.Args().Get(0)))
+					err := generate.GenerateModelCode(generate.GetStructInfoArr(c.Args().Get(0)))
+					if err != nil {
+						fmt.Println(err)
+					}
 					return nil
 				},
 			},
@@ -40,7 +46,10 @@ func main() {
 				Usage:   "生成service",
 				Action: func(c *cli.Context) error {
 					generate.ProjectDir = c.Args().Get(1)
-					generate.GenerateServiceCode(generate.GetStructInfoArr(c.Args().Get(0)))
+					err := generate.GenerateServiceCode(generate.GetStructInfoArr(c.Args().Get(0)))
+					if err != nil {
+						fmt.Println(err)
+					}
 					return nil
 				},
 			},
@@ -50,7 +59,10 @@ func main() {
 				Usage:   "生成handler",
 				Action: func(c *cli.Context) error {
 					generate.ProjectDir = c.Args().Get(1)
-					generate.GenerateHandlerCode(generate.GetStructInfoArr(c.Args().Get(0)))
+					err := generate.GenerateHandlerCode(generate.GetStructInfoArr(c.Args().Get(0)))
+					if err != nil {
+						fmt.Println(err)
+					}
 					return nil
 				},
 			},
@@ -59,7 +71,10 @@ func main() {
 				Usage: "生成sdk",
 				Action: func(c *cli.Context) error {
 					generate.ProjectDir = c.Args().Get(1)
-					generate.GenerateSDKCode(generate.GetStructInfoArr(c.Args().Get(0)))
+					err := generate.GenerateSDKCode(generate.GetStructInfoArr(c.Args().Get(0)))
+					if err != nil {
+						fmt.Println(err)
+					}
 					return nil
 				},
 			},

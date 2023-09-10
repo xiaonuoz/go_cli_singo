@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-func GenerateModelCode(structType []StructInfo) {
+func GenerateModelCode(structType []StructInfo) error {
 	var text strings.Builder
 	for _, st := range structType {
 
@@ -41,13 +41,13 @@ func GenerateModelCode(structType []StructInfo) {
 		path := filepath.Join(ProjectDir, "model", st.TableName)
 		err := os.MkdirAll(path, 0755)
 		if err != nil && !os.IsExist(err) {
-			panic(err)
+			return err
 		}
 
 		// 创建查询文件
 		f, err := os.OpenFile(filepath.Join(path, fmt.Sprintf("query_%s.go", st.TableName)), os.O_CREATE|os.O_RDWR|os.O_APPEND, 0644)
 		if err != nil {
-			panic(fmt.Errorf("OpenFile err:%v", err))
+			return fmt.Errorf("OpenFile err:%v", err)
 		}
 		defer f.Close()
 
@@ -56,14 +56,14 @@ func GenerateModelCode(structType []StructInfo) {
 
 		f1, err := os.OpenFile(filepath.Join(path, fmt.Sprintf("sql_repo_%s.go", st.TableName)), os.O_CREATE|os.O_RDWR|os.O_APPEND, 0644)
 		if err != nil {
-			panic(fmt.Errorf("OpenFile err:%v", err))
+			return fmt.Errorf("OpenFile err:%v", err)
 		}
 		defer f1.Close()
 
 		sql := genModelSQL(st, text, rangeField, rangeField1)
 		f1.Write([]byte(sql.String()))
 	}
-
+	return nil
 }
 
 func genModelQuery(text strings.Builder, tableName string, rangeField2 strings.Builder, rangeFieldWhere strings.Builder) strings.Builder {

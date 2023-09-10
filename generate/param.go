@@ -7,12 +7,12 @@ import (
 	"strings"
 )
 
-func GenerateParamCode(structType []StructInfo) {
+func GenerateParamCode(structType []StructInfo) error {
 	path := filepath.Join(ProjectDir, "serializer")
 	// 创建文件夹
 	err := os.MkdirAll(path, 0755)
 	if err != nil && !os.IsExist(err) {
-		panic(err)
+		return err
 	}
 
 	pagePath := filepath.Join(path, "pagination.go")
@@ -21,7 +21,7 @@ func GenerateParamCode(structType []StructInfo) {
 	if err != nil && os.IsNotExist(err) {
 		f, err := os.Create(pagePath)
 		if err != nil {
-			panic(fmt.Errorf("create page file err:%v", err))
+			return fmt.Errorf("create page file err:%v", err)
 		}
 		f.WriteString(fmt.Sprintf(`
 package serializer
@@ -104,10 +104,10 @@ func GetPagination(page, pageSize uint) *Pagination {
 
 		f, err := os.OpenFile(filepath.Join(path, fmt.Sprintf("%s.go", st.TableName)), os.O_CREATE|os.O_RDWR|os.O_APPEND, 0644)
 		if err != nil {
-			panic(fmt.Errorf("GenerateParamCode err:%v", err))
+			return fmt.Errorf("GenerateParamCode err:%v", err)
 		}
 		defer f.Close()
 		f.Write([]byte(text.String()))
 	}
-
+	return nil
 }

@@ -96,7 +96,8 @@ func GetStructInfoArr(sourceFilePath string) []StructInfo {
 	}
 
 	if len(StructInfoArr) == 0 {
-		panic("文件中不存在结构体！")
+		fmt.Println("文件中不存在结构体！")
+		return StructInfoArr
 	}
 	return StructInfoArr
 }

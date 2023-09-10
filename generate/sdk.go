@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-func GenerateSDKCode(structType []StructInfo) {
+func GenerateSDKCode(structType []StructInfo) error {
 	var text strings.Builder
 	for _, st := range structType {
 		text.WriteString(fmt.Sprintf(`package sdk
@@ -193,13 +193,14 @@ const (
 		path := filepath.Join(ProjectDir, "sdk")
 		err := os.MkdirAll(path, 0755)
 		if err != nil && !os.IsExist(err) {
-			panic(err)
+			return err
 		}
 		f, err := os.OpenFile(filepath.Join(path, fmt.Sprintf("%s.go", st.TableName)), os.O_CREATE|os.O_RDWR|os.O_APPEND, 0644)
 		if err != nil {
-			panic(fmt.Errorf("GenerateSDKCode err:%v", err))
+			return fmt.Errorf("GenerateSDKCode err:%v", err)
 		}
 		defer f.Close()
 		f.Write([]byte(text.String()))
 	}
+	return nil
 }

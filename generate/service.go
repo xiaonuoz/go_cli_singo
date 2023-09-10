@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-func GenerateServiceCode(structType []StructInfo) {
+func GenerateServiceCode(structType []StructInfo) error {
 	var text strings.Builder
 	for _, st := range structType {
 		text.WriteString(fmt.Sprintf("package %v\n", st.TableName))
@@ -72,14 +72,15 @@ type %s struct {
 		path := filepath.Join(ProjectDir, "service", st.TableName)
 		err := os.MkdirAll(path, 0755)
 		if err != nil && !os.IsExist(err) {
-			panic(err)
+			return err
 		}
 
 		f, err := os.OpenFile(filepath.Join(path, fmt.Sprintf("%s_service.go", st.TableName)), os.O_CREATE|os.O_RDWR|os.O_APPEND, 0644)
 		if err != nil {
-			panic(fmt.Errorf("GenerateServiceCode err:%v", err))
+			return fmt.Errorf("GenerateServiceCode err:%v", err)
 		}
 		defer f.Close()
 		f.Write([]byte(text.String()))
 	}
+	return nil
 }
