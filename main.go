@@ -14,11 +14,37 @@ import (
 )
 
 func main() {
+	// fmt.Print("项目地址: ")
+	// _, err := fmt.Scan(&generate.ProjectDir)
+
+	// if err != nil || len(generate.ProjectDir) == 0 {
+	// 	fmt.Println("输入错误:", err)
+	// 	return
+	// }
+
+	// _, err = os.Stat(generate.ProjectDir)
+	// if err != nil || os.IsNotExist(err) {
+	// 	fmt.Println("地址错误:", err)
+	// 	return
+	// }
+	generate.ProjectDir = `D:\go\src\wenfeng\hezui\userkit`
 
 	// 获取工作路径
-	// workDir := "github.com/XiaoNuoZ/go_cli_singo_generate_code"
-	// workDir = filepath.Join(os.Getenv("GOPATH"), "src", workDir)
-	sourceFilePath := "./test.go"
+	var sourceFilePath string = `D:\go\src\wenfeng\hezui\userkit\model\class\test.go`
+	// fmt.Print("model文件地址: ")
+	// _, err = fmt.Scan(&sourceFilePath)
+
+	// if err != nil || len(sourceFilePath) == 0 {
+	// 	fmt.Println("输入错误:", err)
+	// 	return
+	// }
+
+	// _, err = os.Stat(sourceFilePath)
+	// if err != nil || os.IsNotExist(err) {
+	// 	fmt.Println("地址错误:", err)
+	// 	return
+	// }
+
 	// 读取源代码文件
 	sourceFile, err := os.ReadFile(sourceFilePath)
 	if err != nil {
@@ -143,19 +169,6 @@ func main() {
 					return nil
 				},
 			},
-			{
-				Name:  "all",
-				Usage: "全部生成",
-				Action: func(c *cli.Context) error {
-					generate.GenerateParamCode(StructInfoArr)
-					generate.GenerateModelCode(StructInfoArr)
-					generate.GenerateServiceCode(StructInfoArr)
-					generate.GenerateHanderCode(StructInfoArr)
-					generate.GenerateSDKCode(StructInfoArr)
-					return nil
-				},
-			},
-			// 添加其他命令...
 		},
 	}
 

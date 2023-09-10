@@ -3,13 +3,8 @@ package generate
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 	"strings"
-)
-
-var (
-	modelText = `
-
-	`
 )
 
 func GenerateModelCode(structType []StructInfo) {
@@ -42,20 +37,37 @@ func GenerateModelCode(structType []StructInfo) {
 			}
 		}
 
-		if err := genModelQuery(text, st.TableName, rangeField2, rangeFieldWhere); err != nil {
-			panic(fmt.Errorf("genModelQuery err:%v", err))
+		// 创建文件夹
+		path := filepath.Join(ProjectDir, "model", st.TableName)
+		err := os.MkdirAll(path, 0755)
+		if err != nil && !os.IsExist(err) {
+			panic(err)
 		}
 
-		if err := genModelSQL(st, text, rangeField, rangeField1); err != nil {
-			panic(fmt.Errorf("genModelSQL err:%v", err))
+		// 创建查询文件
+		f, err := os.OpenFile(filepath.Join(path, fmt.Sprintf("query_%s.go", st.TableName)), os.O_CREATE|os.O_RDWR|os.O_APPEND, 0644)
+		if err != nil {
+			panic(fmt.Errorf("OpenFile err:%v", err))
 		}
+		defer f.Close()
 
+		query := genModelQuery(text, st.TableName, rangeField2, rangeFieldWhere)
+		f.Write([]byte(query.String()))
+
+		f1, err := os.OpenFile(filepath.Join(path, fmt.Sprintf("sql_repo_%s.go", st.TableName)), os.O_CREATE|os.O_RDWR|os.O_APPEND, 0644)
+		if err != nil {
+			panic(fmt.Errorf("OpenFile err:%v", err))
+		}
+		defer f1.Close()
+
+		sql := genModelSQL(st, text, rangeField, rangeField1)
+		f1.Write([]byte(sql.String()))
 	}
 
 }
 
-func genModelQuery(text strings.Builder, tableName string, rangeField2 strings.Builder, rangeFieldWhere strings.Builder) error {
-	text.WriteString(fmt.Sprintf(`package model
+func genModelQuery(text strings.Builder, tableName string, rangeField2 strings.Builder, rangeFieldWhere strings.Builder) strings.Builder {
+	text.WriteString(fmt.Sprintf(`package %s
 
 import "gorm.io/gorm"
 
@@ -68,7 +80,7 @@ type %sQuery struct {
 	Offset uint
 }
 
-`, tableName, tableName, tableName, rangeField2.String()))
+`, tableName, tableName, tableName, tableName, rangeField2.String()))
 
 	text.WriteString(fmt.Sprintf(`// where 条件
 func (c %sQuery) where() func(db *gorm.DB) *gorm.DB {
@@ -101,23 +113,18 @@ func (c %vQuery) preload() func(db *gorm.DB) *gorm.DB {
 	}
 }
 `, tableName, tableName))
-	fmt.Println(text.String())
 
-	f, err := os.OpenFile(fmt.Sprintf("query_%s.go", tableName), os.O_CREATE|os.O_RDWR|os.O_APPEND, 0644)
-	if err != nil {
-		return err
-	}
-	defer f.Close()
-	f.Write([]byte(text.String()))
-	return nil
+	return text
 }
 
-func genModelSQL(st StructInfo, text strings.Builder, rangeField strings.Builder, rangeField1 strings.Builder) error {
-	text.WriteString(fmt.Sprintf("type %sSQLRepo struct {\n\tdb *gorm.DB\n}\n", st.TableName))
+func genModelSQL(st StructInfo, text strings.Builder, rangeField strings.Builder, rangeField1 strings.Builder) strings.Builder {
+	text.WriteString(fmt.Sprintf("package %s\n\n", st.TableName))
 
-	text.WriteString(fmt.Sprintf("func (repo %sSQLRepo) GetByID(id uint) (*%s, error) {\n\tq := %sQuery{\n\t\tID: id,\n\t}\n\treturn repo.get(q)\n}\n\n", st.TableName, st.Name, st.TableName))
+	text.WriteString(fmt.Sprintf("type %sSQLRepo struct {\n\tdb *gorm.DB\n}\n", st.Name))
 
-	text.WriteString(fmt.Sprintf("func (repo %vSQLRepo) Create(param serializer.%vCreateParam) (*%v, error) {\n", st.TableName, st.Name, st.Name))
+	text.WriteString(fmt.Sprintf("func (repo %sSQLRepo) GetByID(id uint) (*%s, error) {\n\tq := %sQuery{\n\t\tID: id,\n\t}\n\treturn repo.get(q)\n}\n\n", st.Name, st.Name, st.TableName))
+
+	text.WriteString(fmt.Sprintf("func (repo %vSQLRepo) Create(param serializer.%vCreateParam) (*%v, error) {\n", st.Name, st.Name, st.Name))
 	text.WriteString(fmt.Sprintf(`	obj := &%v{
 %v
 	}
@@ -148,7 +155,7 @@ func genModelSQL(st StructInfo, text strings.Builder, rangeField strings.Builder
 	return obj, nil
 }
 
-`, st.TableName, st.Name, st.Name, st.TableName, rangeField1.String(), st.Name))
+`, st.Name, st.Name, st.Name, st.TableName, rangeField1.String(), st.Name))
 
 	text.WriteString(fmt.Sprintf(`func (repo %sSQLRepo) Search(param serializer.%sSearchParam) ([]%s, uint, error) {
 
@@ -175,7 +182,7 @@ func genModelSQL(st StructInfo, text strings.Builder, rangeField strings.Builder
 	return objArr, count, nil
 }
 
-`, st.TableName, st.Name, st.Name, st.TableName, rangeField.String(), st.Name, st.Name))
+`, st.Name, st.Name, st.Name, st.TableName, rangeField.String(), st.Name, st.Name))
 
 	text.WriteString(fmt.Sprintf(`func (repo %sSQLRepo) Delete(param serializer.%sDeleteParam) error {
 
@@ -192,7 +199,7 @@ func genModelSQL(st StructInfo, text strings.Builder, rangeField strings.Builder
 	return nil
 }
 
-`, st.TableName, st.Name, st.TableName, st.Name))
+`, st.Name, st.Name, st.TableName, st.Name))
 
 	text.WriteString(fmt.Sprintf(`func (repo %sSQLRepo) List(param serializer.%sListParam) ([]%s, error) {
 		query := %sQuery{
@@ -208,7 +215,7 @@ func genModelSQL(st StructInfo, text strings.Builder, rangeField strings.Builder
 		return objArr, nil
 	}
 	
-	`, st.TableName, st.Name, st.Name, st.TableName, rangeField.String(), st.Name, st.Name))
+	`, st.Name, st.Name, st.Name, st.TableName, rangeField.String(), st.Name, st.Name))
 
 	text.WriteString(fmt.Sprintf(`func (repo %sSQLRepo) get(query %sQuery) (*%s, error) {
 
@@ -222,7 +229,7 @@ func genModelSQL(st StructInfo, text strings.Builder, rangeField strings.Builder
 	return obj, nil
 }
 
-`, st.TableName, st.TableName, st.Name, st.Name, st.Name))
+`, st.Name, st.TableName, st.Name, st.Name, st.Name))
 
 	text.WriteString(fmt.Sprintf(`func (repo %sSQLRepo) count(query %sQuery) (uint, error) {
 
@@ -232,13 +239,7 @@ func genModelSQL(st StructInfo, text strings.Builder, rangeField strings.Builder
 		}
 		return uint(count), nil
 	}
-	`, st.TableName, st.TableName, st.Name, st.Name))
+	`, st.Name, st.TableName, st.Name, st.Name))
 
-	f, err := os.OpenFile(fmt.Sprintf("sql_repo_%s.go", st.TableName), os.O_CREATE|os.O_RDWR|os.O_APPEND, 0644)
-	if err != nil {
-		return err
-	}
-	defer f.Close()
-	f.Write([]byte(text.String()))
-	return nil
+	return text
 }

@@ -3,6 +3,7 @@ package generate
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 	"strings"
 )
 
@@ -45,7 +46,12 @@ func get%sByID(c *gin.Context) {
 		text.WriteString(fmt.Sprintf(funcFormat, "create", st.Name, st.Name, "Create", st.Name, "Create"))
 		text.WriteString(fmt.Sprintf(funcFormat, "delete", st.Name, st.Name, "Delete", st.Name, "Delete"))
 
-		f, err := os.OpenFile("generate/model.ex.go", os.O_CREATE|os.O_RDWR|os.O_APPEND, 0644)
+		path := filepath.Join(ProjectDir, "api")
+		err := os.MkdirAll(path, 0755)
+		if err != nil && !os.IsExist(err) {
+			panic(err)
+		}
+		f, err := os.OpenFile(filepath.Join(path, fmt.Sprintf("%s_hander.go", st.TableName)), os.O_CREATE|os.O_RDWR|os.O_APPEND, 0644)
 		if err != nil {
 			panic(fmt.Errorf("GenerateHanderCode err:%v", err))
 		}

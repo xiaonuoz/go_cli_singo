@@ -3,6 +3,7 @@ package generate
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 	"strings"
 )
 
@@ -39,12 +40,12 @@ type %s struct {
 	pagination.Total = count
 
 	return serializer.ResponseOk(struct {
-			%s []model.%s %s
+			%s []%s.%s %s
 			Pagination *serializer.Pagination %s
 		}{value, pagination})
 }
 
-`, st.Name, "Search", st.Name, "Search", st.Name, "Search", st.Name, st.Name, "`json:\"array\" form:\"array\"`", "`json:\"pagination\" form:\"pagination\"`"))
+`, st.Name, "Search", st.Name, "Search", st.Name, "Search", st.Name, st.TableName, st.Name, "`json:\"array\" form:\"array\"`", "`json:\"pagination\" form:\"pagination\"`"))
 
 		funcFormat := `func (s *%s) %s(param serializer.%s%sParam) *serializer.Response {
 	value, err := model.%sRepo.%s(param)
@@ -68,9 +69,13 @@ type %s struct {
 
 `, st.Name, "Delete", st.Name, "Delete", st.Name, "Delete"))
 
-		fmt.Println(text.String())
+		path := filepath.Join(ProjectDir, "service", st.TableName)
+		err := os.MkdirAll(path, 0755)
+		if err != nil && !os.IsExist(err) {
+			panic(err)
+		}
 
-		f, err := os.OpenFile("generate/service_ex.go", os.O_CREATE|os.O_RDWR|os.O_APPEND, 0644)
+		f, err := os.OpenFile(filepath.Join(path, fmt.Sprintf("%s_service.go", st.TableName)), os.O_CREATE|os.O_RDWR|os.O_APPEND, 0644)
 		if err != nil {
 			panic(fmt.Errorf("GenerateServiceCode err:%v", err))
 		}

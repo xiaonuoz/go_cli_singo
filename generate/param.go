@@ -3,10 +3,60 @@ package generate
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 	"strings"
 )
 
 func GenerateParamCode(structType []StructInfo) {
+	path := filepath.Join(ProjectDir, "serializer")
+	// 创建文件夹
+	err := os.MkdirAll(path, 0755)
+	if err != nil && !os.IsExist(err) {
+		panic(err)
+	}
+
+	pagePath := filepath.Join(path, "pagination.go")
+	// 生成页面生成器工具类
+	_, err = os.Stat(pagePath)
+	if err != nil && os.IsNotExist(err) {
+		f, err := os.Create(pagePath)
+		if err != nil {
+			panic(fmt.Errorf("create page file err:%v", err))
+		}
+		f.WriteString(fmt.Sprintf(`
+package serializer
+
+// Pagination 提供给前端的页码生成器
+type Pagination struct {
+	Total    uint %s
+	PageSize uint %s
+	Current  uint %s
+}
+
+// Page PageSize 每页数据条数
+const (
+	Page     = 1
+	PageSize = 10
+)
+
+func GetPagination(page, pageSize uint) *Pagination {
+	var p uint = Page
+	if page > 0 {
+		p = page
+	}
+	var ps uint = PageSize
+	if pageSize > 0 {
+		ps = pageSize
+	}
+	return &Pagination{
+		Total:    0,
+		PageSize: ps,
+		Current:  p,
+	}
+}
+
+`, "`json:\"total\"`", "`json:\"pageSize\"`", "`json:\"current\"`"))
+	}
 	var text strings.Builder
 	for _, st := range structType {
 		// 遍历字段
@@ -52,7 +102,7 @@ func GenerateParamCode(structType []StructInfo) {
 		text.WriteString("\tID\tuint\t`json:\"id\" form:\"id\"`\n")
 		text.WriteString("}\n")
 
-		f, err := os.OpenFile(fmt.Sprintf("%s.go", st.TableName), os.O_CREATE|os.O_RDWR|os.O_APPEND, 0644)
+		f, err := os.OpenFile(filepath.Join(path, fmt.Sprintf("%s.go", st.TableName)), os.O_CREATE|os.O_RDWR|os.O_APPEND, 0644)
 		if err != nil {
 			panic(fmt.Errorf("GenerateParamCode err:%v", err))
 		}

@@ -3,6 +3,7 @@ package generate
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 	"strings"
 )
 
@@ -11,11 +12,13 @@ func GenerateSDKCode(structType []StructInfo) {
 	for _, st := range structType {
 		text.WriteString(fmt.Sprintf(`package sdk
 import (
+	"bytes"
+	"encoding/json"
 	"errors"
 	"fmt"
-	"log"
-	"net/url"
-	"strconv"
+	"io"
+	"net/http"
+
 )
 
 const (
@@ -26,7 +29,7 @@ const (
 )
 
 `, st.Name, st.TableName, st.TableName, st.TableName, st.Name, st.TableName, st.Name, st.TableName))
-		modelStruct := "*model." + st.Name
+		modelStruct := fmt.Sprintf("*%s.%s", st.TableName, st.Name)
 		structString := `result := &struct {
 		Code  int          %s
 		Data  %s %s
@@ -173,11 +176,11 @@ const (
 `, "Delete", st.Name, st.Name, "Delete", cudSting, "DELETE", st.TableName))
 
 		text.WriteString(fmt.Sprintf(`type %s%sResp struct {
-	%s      []model.%s          %s
+	%s      []%s.%s          %s
 	Pagination *serializer.Pagination %s
 }
 
-`, "Search", st.Name, st.Name, st.Name, "`json:\"array\" form:\"array\"`", "`json:\"pagination\" form:\"pagination\"`"))
+`, "Search", st.Name, st.Name, st.TableName, st.Name, "`json:\"array\" form:\"array\"`", "`json:\"pagination\" form:\"pagination\"`"))
 
 		searchStruct := "*Search" + st.Name + "Resp"
 		// search
@@ -187,7 +190,12 @@ const (
 
 		text.WriteString(fmt.Sprintf(reqString, "List", st.Name, st.Name, "List", modelStruct, cudSting, "GET", st.TableName))
 
-		f, err := os.OpenFile(fmt.Sprintf("%s.go", st.TableName), os.O_CREATE|os.O_RDWR|os.O_APPEND, 0644)
+		path := filepath.Join(ProjectDir, "sdk")
+		err := os.MkdirAll(path, 0755)
+		if err != nil && !os.IsExist(err) {
+			panic(err)
+		}
+		f, err := os.OpenFile(filepath.Join(path, fmt.Sprintf("%s.go", st.TableName)), os.O_CREATE|os.O_RDWR|os.O_APPEND, 0644)
 		if err != nil {
 			panic(fmt.Errorf("GenerateSDKCode err:%v", err))
 		}
