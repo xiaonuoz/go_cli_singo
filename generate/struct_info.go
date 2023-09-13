@@ -51,7 +51,14 @@ func GetStructInfoArr(sourceFilePath string) []StructInfo {
 						if len(structInfo.Name) < 2 {
 							panic("结构体名不能单字符")
 						}
-						structInfo.TableName = strings.ToLower(structInfo.Name[:1]) + structInfo.Name[1:]
+
+						entries := camelcase.Split(structInfo.Name)
+						var fileNameSplit []string
+						for _, v := range entries {
+							fileNameSplit = append(fileNameSplit, strings.ToLower(v))
+						}
+
+						structInfo.TableName = strings.Join(fileNameSplit, "_")
 
 						if st, ok := ts.Type.(*ast.StructType); ok {
 
