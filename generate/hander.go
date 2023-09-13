@@ -28,8 +28,8 @@ func get%sByID(c *gin.Context) {
 `, st.Name, st.Name, st.Name))
 
 		funcFormat := `func %s%s(c *gin.Context) {
-	param := serializer.%s%sParam{}
-	if err := c.ShouldBindJSON(&param); err != nil {
+	param := new(serializer.%s%sParam)
+	if err := c.ShouldBind%s(param); err != nil {
 		c.JSON(200, Err(serializer.CodeBindJSONErr, err))
 		return
 	}
@@ -40,11 +40,11 @@ func get%sByID(c *gin.Context) {
 
 `
 
-		text.WriteString(fmt.Sprintf(funcFormat, "search", st.Name, st.Name, "Search", st.Name, "Search"))
-		text.WriteString(fmt.Sprintf(funcFormat, "list", st.Name, st.Name, "List", st.Name, "List"))
-		text.WriteString(fmt.Sprintf(funcFormat, "modify", st.Name, st.Name, "Modify", st.Name, "Modify"))
-		text.WriteString(fmt.Sprintf(funcFormat, "create", st.Name, st.Name, "Create", st.Name, "Create"))
-		text.WriteString(fmt.Sprintf(funcFormat, "delete", st.Name, st.Name, "Delete", st.Name, "Delete"))
+		text.WriteString(fmt.Sprintf(funcFormat, "search", st.Name, st.Name, "Search", "Query", st.Name, "Search"))
+		text.WriteString(fmt.Sprintf(funcFormat, "list", st.Name, st.Name, "List", "Query", st.Name, "List"))
+		text.WriteString(fmt.Sprintf(funcFormat, "modify", st.Name, st.Name, "Modify", "JSON", st.Name, "Modify"))
+		text.WriteString(fmt.Sprintf(funcFormat, "create", st.Name, st.Name, "Create", "JSON", st.Name, "Create"))
+		text.WriteString(fmt.Sprintf(funcFormat, "delete", st.Name, st.Name, "Delete", "JSON", st.Name, "Delete"))
 
 		path := filepath.Join(ProjectDir, "api")
 		err := os.MkdirAll(path, 0755)

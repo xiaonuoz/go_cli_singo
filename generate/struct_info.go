@@ -17,6 +17,7 @@ var ProjectDir string
 type StructInfo struct {
 	Name      string
 	TableName string
+	LocalName string // 私有变量，外部包不使用
 
 	Field      []string
 	FieldType  []string
@@ -59,6 +60,8 @@ func GetStructInfoArr(sourceFilePath string) []StructInfo {
 						}
 
 						structInfo.TableName = strings.Join(fileNameSplit, "_")
+
+						structInfo.LocalName = strings.ToLower(structInfo.Name[:1]) + structInfo.Name[1:]
 
 						if st, ok := ts.Type.(*ast.StructType); ok {
 

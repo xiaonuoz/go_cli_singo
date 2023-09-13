@@ -18,21 +18,21 @@ type %s struct {
 `, st.Name, st.Name))
 
 		text.WriteString(fmt.Sprintf(`func (s *%s) GetByID(id uint) *serializer.Response {
-	value, err := model.%sRepo.GetByID(id)
+	value, err := %s.%sRepo.GetByID(id)
 	if err != nil {
 		return serializer.Err(serializer.CodeHandlerErr, err)
 	}
 	return serializer.ResponseOk(value)
 }
 
-`, st.Name, st.Name))
+`, st.Name, st.TableName, st.Name))
 
-		text.WriteString(fmt.Sprintf(`func (s *%s) %s(param serializer.%s%sParam) *serializer.Response {
+		text.WriteString(fmt.Sprintf(`func (s *%s) %s(param *serializer.%s%sParam) *serializer.Response {
 	pagination := serializer.GetPagination(param.Page, param.PageSize)
 	param.Page = pagination.Current
 	param.PageSize = pagination.PageSize
 
-	value, count, err := model.%sRepo.%s(param)
+	value, count, err := %s.%sRepo.%s(param)
 	if err != nil {
 		return serializer.Err(serializer.CodeHandlerErr, err)
 	}
@@ -45,10 +45,10 @@ type %s struct {
 		}{value, pagination})
 }
 
-`, st.Name, "Search", st.Name, "Search", st.Name, "Search", st.Name, st.TableName, st.Name, "`json:\"array\" form:\"array\"`", "`json:\"pagination\" form:\"pagination\"`"))
+`, st.Name, "Search", st.Name, "Search", st.TableName, st.Name, "Search", st.Name, st.TableName, st.Name, "`json:\"array\" form:\"array\"`", "`json:\"pagination\" form:\"pagination\"`"))
 
-		funcFormat := `func (s *%s) %s(param serializer.%s%sParam) *serializer.Response {
-	value, err := model.%sRepo.%s(param)
+		funcFormat := `func (s *%s) %s(param *serializer.%s%sParam) *serializer.Response {
+	value, err := %s.%sRepo.%s(param)
 	if err != nil {
 		return serializer.Err(serializer.CodeHandlerErr, err)
 	}
@@ -56,18 +56,18 @@ type %s struct {
 }
 
 `
-		text.WriteString(fmt.Sprintf(funcFormat, st.Name, "List", st.Name, "List", st.Name, "List"))
-		text.WriteString(fmt.Sprintf(funcFormat, st.Name, "Create", st.Name, "Create", st.Name, "Create"))
-		text.WriteString(fmt.Sprintf(funcFormat, st.Name, "Modify", st.Name, "Modify", st.Name, "Modify"))
-		text.WriteString(fmt.Sprintf(`func (s *%s) %s(param serializer.%s%sParam) *serializer.Response {
-	err := model.%sRepo.%s(param)
+		text.WriteString(fmt.Sprintf(funcFormat, st.Name, "List", st.Name, "List", st.TableName, st.Name, "List"))
+		text.WriteString(fmt.Sprintf(funcFormat, st.Name, "Create", st.Name, "Create", st.TableName, st.Name, "Create"))
+		text.WriteString(fmt.Sprintf(funcFormat, st.Name, "Modify", st.Name, "Modify", st.TableName, st.Name, "Modify"))
+		text.WriteString(fmt.Sprintf(`func (s *%s) %s(param *serializer.%s%sParam) *serializer.Response {
+	err := %s.%sRepo.%s(param)
 	if err != nil {
 		return serializer.Err(serializer.CodeHandlerErr, err)
 	}
 	return serializer.ResponseOk(nil)
 }
 
-`, st.Name, "Delete", st.Name, "Delete", st.Name, "Delete"))
+`, st.Name, "Delete", st.Name, "Delete", st.TableName, st.Name, "Delete"))
 
 		path := filepath.Join(ProjectDir, "service", st.TableName)
 		err := os.MkdirAll(path, 0755)

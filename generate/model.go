@@ -120,11 +120,21 @@ func (c %vQuery) preload() func(db *gorm.DB) *gorm.DB {
 func genModelSQL(st StructInfo, text strings.Builder, rangeField strings.Builder, rangeField1 strings.Builder) strings.Builder {
 	text.WriteString(fmt.Sprintf("package %s\n\n", st.TableName))
 
-	text.WriteString(fmt.Sprintf("type %sSQLRepo struct {\n\tdb *gorm.DB\n}\n", st.Name))
+	text.WriteString(fmt.Sprintf(`var %sRepo %sSQLRepo
 
-	text.WriteString(fmt.Sprintf("func (repo %sSQLRepo) GetByID(id uint) (*%s, error) {\n\tq := %sQuery{\n\t\tID: id,\n\t}\n\treturn repo.get(q)\n}\n\n", st.Name, st.Name, st.TableName))
+func Init(db *gorm.DB) {
+	%sRepo = %sSQLRepo{
+		db: db,
+	}
+}
+	
+`, st.Name, st.LocalName, st.Name, st.LocalName))
 
-	text.WriteString(fmt.Sprintf("func (repo %vSQLRepo) Create(param serializer.%vCreateParam) (*%v, error) {\n", st.Name, st.Name, st.Name))
+	text.WriteString(fmt.Sprintf("type %sSQLRepo struct {\n\tdb *gorm.DB\n}\n\n", st.LocalName))
+
+	text.WriteString(fmt.Sprintf("func (repo %sSQLRepo) GetByID(id uint) (*%s, error) {\n\tq := %sQuery{\n\t\tID: id,\n\t}\n\treturn repo.get(q)\n}\n\n", st.LocalName, st.Name, st.TableName))
+
+	text.WriteString(fmt.Sprintf("func (repo %vSQLRepo) Create(param *serializer.%vCreateParam) (*%v, error) {\n", st.LocalName, st.Name, st.Name))
 	text.WriteString(fmt.Sprintf(`	obj := &%v{
 %v
 	}
@@ -137,7 +147,7 @@ func genModelSQL(st StructInfo, text strings.Builder, rangeField strings.Builder
 
 `, st.Name, rangeField.String(), st.Name))
 
-	text.WriteString(fmt.Sprintf(`func (repo %sSQLRepo) Modify(param serializer.%sModifyParam) (*%s, error) {
+	text.WriteString(fmt.Sprintf(`func (repo %sSQLRepo) Modify(param *serializer.%sModifyParam) (*%s, error) {
 
 	query := %sQuery{
 		ID: param.ID,
@@ -155,9 +165,9 @@ func genModelSQL(st StructInfo, text strings.Builder, rangeField strings.Builder
 	return obj, nil
 }
 
-`, st.Name, st.Name, st.Name, st.TableName, rangeField1.String(), st.Name))
+`, st.LocalName, st.Name, st.Name, st.TableName, rangeField1.String(), st.Name))
 
-	text.WriteString(fmt.Sprintf(`func (repo %sSQLRepo) Search(param serializer.%sSearchParam) ([]%s, uint, error) {
+	text.WriteString(fmt.Sprintf(`func (repo %sSQLRepo) Search(param *serializer.%sSearchParam) ([]%s, uint, error) {
 
 	query := %sQuery{
 %s
@@ -182,9 +192,9 @@ func genModelSQL(st StructInfo, text strings.Builder, rangeField strings.Builder
 	return objArr, count, nil
 }
 
-`, st.Name, st.Name, st.Name, st.TableName, rangeField.String(), st.Name, st.Name))
+`, st.LocalName, st.Name, st.Name, st.TableName, rangeField.String(), st.Name, st.Name))
 
-	text.WriteString(fmt.Sprintf(`func (repo %sSQLRepo) Delete(param serializer.%sDeleteParam) error {
+	text.WriteString(fmt.Sprintf(`func (repo %sSQLRepo) Delete(param *serializer.%sDeleteParam) error {
 
 	query := %sQuery{
 		ID: param.ID,
@@ -199,9 +209,9 @@ func genModelSQL(st StructInfo, text strings.Builder, rangeField strings.Builder
 	return nil
 }
 
-`, st.Name, st.Name, st.TableName, st.Name))
+`, st.LocalName, st.Name, st.TableName, st.Name))
 
-	text.WriteString(fmt.Sprintf(`func (repo %sSQLRepo) List(param serializer.%sListParam) ([]%s, error) {
+	text.WriteString(fmt.Sprintf(`func (repo %sSQLRepo) List(param *serializer.%sListParam) ([]%s, error) {
 		query := %sQuery{
 	%s
 		}
@@ -215,7 +225,7 @@ func genModelSQL(st StructInfo, text strings.Builder, rangeField strings.Builder
 		return objArr, nil
 	}
 	
-	`, st.Name, st.Name, st.Name, st.TableName, rangeField.String(), st.Name, st.Name))
+	`, st.LocalName, st.Name, st.Name, st.TableName, rangeField.String(), st.Name, st.Name))
 
 	text.WriteString(fmt.Sprintf(`func (repo %sSQLRepo) get(query %sQuery) (*%s, error) {
 
@@ -229,7 +239,7 @@ func genModelSQL(st StructInfo, text strings.Builder, rangeField strings.Builder
 	return obj, nil
 }
 
-`, st.Name, st.TableName, st.Name, st.Name, st.Name))
+`, st.LocalName, st.TableName, st.Name, st.Name, st.Name))
 
 	text.WriteString(fmt.Sprintf(`func (repo %sSQLRepo) count(query %sQuery) (uint, error) {
 
@@ -239,7 +249,7 @@ func genModelSQL(st StructInfo, text strings.Builder, rangeField strings.Builder
 		}
 		return uint(count), nil
 	}
-	`, st.Name, st.TableName, st.Name, st.Name))
+	`, st.LocalName, st.TableName, st.Name, st.Name))
 
 	return text
 }
