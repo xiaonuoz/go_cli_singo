@@ -61,8 +61,23 @@ func GetPagination(page, pageSize uint) *Pagination {
 	for _, st := range structType {
 		// 遍历字段
 		var rangeField strings.Builder
+		var isvalid strings.Builder
 		for index, field := range st.Field {
 			rangeField.WriteString(fmt.Sprintf("\t%s\t%s\t%s\t%s\n", field, st.FieldType[index], fmt.Sprintf("`json:\"%s\" form:\"%s\"`", st.Tsgs[index], st.Tsgs[index]), st.Comments[index]))
+			switch st.FieldType[index] {
+			case "string":
+				isvalid.WriteString(fmt.Sprintf(`
+	if len(param.%v) == 0 {
+		return errors.New("%s %s 不能为空")
+	}
+`, field, st.Name, field))
+			case "int", "uint", "int64", "uint64":
+				isvalid.WriteString(fmt.Sprintf(`
+	if param.%v == 0 {
+		return errors.New("%s %s 不能为0")
+	}
+`, field, st.Name, field))
+			}
 		}
 
 		text.WriteString("package serializer\n")
@@ -74,12 +89,31 @@ func GetPagination(page, pageSize uint) *Pagination {
 		text.WriteString(rangeField.String())
 		text.WriteString("}\n")
 
+		text.WriteString(fmt.Sprintf(`
+func (param *%sCreateParam) IsValid() error {
+	%s
+	return nil
+}
+
+`, st.Name, isvalid.String()))
+
 		// 生成modify param
 		text.WriteString(fmt.Sprintf("\n// %sModifyParam 修改参数\n", st.Name))
 		text.WriteString(fmt.Sprintf("type %sModifyParam struct {\n", st.Name))
 		text.WriteString("\tID\tuint\t`json:\"id\" form:\"id\"`\n")
 		text.WriteString(rangeField.String())
 		text.WriteString("}\n")
+
+		text.WriteString(fmt.Sprintf(`
+func (param *%sModifyParam) IsValid() error {
+	if param.ID == 0 {
+		return errors.New("%s ID不能为0")
+	}
+	%s
+	return nil
+}
+
+`, st.Name, st.Name, isvalid.String()))
 
 		// 生成search param
 		text.WriteString(fmt.Sprintf("\n// %sSearchParam 查询参数\n", st.Name))
@@ -101,6 +135,16 @@ func GetPagination(page, pageSize uint) *Pagination {
 		text.WriteString(fmt.Sprintf("type %sDeleteParam struct {\n", st.Name))
 		text.WriteString("\tID\tuint\t`json:\"id\" form:\"id\"`\n")
 		text.WriteString("}\n")
+
+		text.WriteString(fmt.Sprintf(`
+func (param *%sDeleteParam) IsValid() error {
+	if param.ID == 0 {
+		return errors.New("%s ID不能为0")
+	}
+	return nil
+}
+
+`, st.Name, st.Name))
 
 		f, err := os.OpenFile(filepath.Join(path, fmt.Sprintf("%s.go", st.TableName)), os.O_CREATE|os.O_RDWR|os.O_APPEND, 0644)
 		if err != nil {

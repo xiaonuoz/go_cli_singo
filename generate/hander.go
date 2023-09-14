@@ -33,18 +33,25 @@ func get%sByID(c *gin.Context) {
 		c.JSON(200, Err(serializer.CodeBindJSONErr, err))
 		return
 	}
-
+	%s
 	res := service.%sService.%s(param)
 	c.JSON(200, res)
 }
 
 `
 
-		text.WriteString(fmt.Sprintf(funcFormat, "search", st.Name, st.Name, "Search", "Query", st.Name, "Search"))
-		text.WriteString(fmt.Sprintf(funcFormat, "list", st.Name, st.Name, "List", "Query", st.Name, "List"))
-		text.WriteString(fmt.Sprintf(funcFormat, "modify", st.Name, st.Name, "Modify", "JSON", st.Name, "Modify"))
-		text.WriteString(fmt.Sprintf(funcFormat, "create", st.Name, st.Name, "Create", "JSON", st.Name, "Create"))
-		text.WriteString(fmt.Sprintf(funcFormat, "delete", st.Name, st.Name, "Delete", "JSON", st.Name, "Delete"))
+		isvalid := `	
+	if err := param.IsValid(); err != nil {
+		c.JSON(200, Err(serializer.CodeBindJSONErr, err))
+		return
+	}
+`
+
+		text.WriteString(fmt.Sprintf(funcFormat, "search", st.Name, st.Name, "Search", "Query", "", st.Name, "Search"))
+		text.WriteString(fmt.Sprintf(funcFormat, "list", st.Name, st.Name, "List", "Query", "", st.Name, "List"))
+		text.WriteString(fmt.Sprintf(funcFormat, "modify", st.Name, st.Name, "Modify", "JSON", isvalid, st.Name, "Modify"))
+		text.WriteString(fmt.Sprintf(funcFormat, "create", st.Name, st.Name, "Create", "JSON", isvalid, st.Name, "Create"))
+		text.WriteString(fmt.Sprintf(funcFormat, "delete", st.Name, st.Name, "Delete", "JSON", isvalid, st.Name, "Delete"))
 
 		path := filepath.Join(ProjectDir, "api")
 		err := os.MkdirAll(path, 0755)
