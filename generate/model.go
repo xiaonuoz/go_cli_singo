@@ -91,6 +91,29 @@ type GormModel struct {
 
 		sql := genModelSQL(st, text, rangeField, rangeField1)
 		f1.Write([]byte(sql.String()))
+
+		// 创建init
+		initPath := filepath.Join(path, "init.go")
+		_, err = os.Stat(initPath)
+		if os.IsNotExist(err) {
+			fi, err := os.Create(initPath)
+			if err != nil {
+				return fmt.Errorf("create init file err:%v", err)
+			}
+			defer fi.Close()
+
+			fi.WriteString(fmt.Sprintf(`package %s
+
+var %sRepo %sSQLRepo
+
+func Init(db *gorm.DB) {
+	%sRepo = %sSQLRepo{
+		db: db,
+	}
+}
+
+`, st.TableName, st.Name, st.LocalName, st.Name, st.LocalName))
+		}
 	}
 	return nil
 }
@@ -148,16 +171,6 @@ func (c %vQuery) preload() func(db *gorm.DB) *gorm.DB {
 
 func genModelSQL(st StructInfo, text strings.Builder, rangeField strings.Builder, rangeField1 strings.Builder) strings.Builder {
 	text.WriteString(fmt.Sprintf("package %s\n\n", st.TableName))
-
-	text.WriteString(fmt.Sprintf(`var %sRepo %sSQLRepo
-
-func Init(db *gorm.DB) {
-	%sRepo = %sSQLRepo{
-		db: db,
-	}
-}
-	
-`, st.Name, st.LocalName, st.Name, st.LocalName))
 
 	text.WriteString(fmt.Sprintf("type %sSQLRepo struct {\n\tdb *gorm.DB\n}\n\n", st.LocalName))
 
