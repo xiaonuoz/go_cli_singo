@@ -85,7 +85,6 @@ func GetPagination(page, pageSize uint) *Pagination {
 		// 生成create param
 		text.WriteString(fmt.Sprintf("\n// %sCreateParam 创建参数\n", st.Name))
 		text.WriteString(fmt.Sprintf("type %sCreateParam struct {\n", st.Name))
-
 		text.WriteString(rangeField.String())
 		text.WriteString("}\n")
 
