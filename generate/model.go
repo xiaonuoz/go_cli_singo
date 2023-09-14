@@ -37,9 +37,38 @@ func GenerateModelCode(structType []StructInfo) error {
 			}
 		}
 
+		// 创建ormPath文件
+		ormPath := filepath.Join(ProjectDir, "model", "orm")
+		err := os.MkdirAll(ormPath, 0755)
+		if err != nil && os.IsExist(err) {
+			return err
+		}
+
+		fs, err := os.Create(filepath.Join(ormPath, "type_orm.go"))
+		if err != nil {
+			return fmt.Errorf("create orm file err:%v", err)
+		}
+		defer fs.Close()
+		fs.WriteString(fmt.Sprintf(`package orm
+
+import (
+	"time"
+
+	"gorm.io/gorm"
+)
+
+// GormModel base model
+type GormModel struct {
+	ID        uint           %s
+	CreatedAt time.Time      %s
+	UpdatedAt time.Time      %s
+	DeletedAt gorm.DeletedAt %s
+}
+		`, "`json:\"id\" gorm:\"primaryKey\"`", "`json:\"created_at\" gorm:\"index\"`", "`json:\"updated_at\"`", "`json:\"-\" gorm:\"index\"`"))
+
 		// 创建文件夹
 		path := filepath.Join(ProjectDir, "model", st.TableName)
-		err := os.MkdirAll(path, 0755)
+		err = os.MkdirAll(path, 0755)
 		if err != nil && !os.IsExist(err) {
 			return err
 		}
