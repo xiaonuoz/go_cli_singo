@@ -4,6 +4,7 @@ go 1.17
 
 require (
 	github.com/fatih/camelcase v1.0.0
+	github.com/shopspring/decimal v1.3.1
 	github.com/urfave/cli/v2 v2.25.7
 )
 

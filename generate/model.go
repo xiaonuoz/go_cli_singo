@@ -15,14 +15,19 @@ func GenerateModelCode(structType []StructInfo) error {
 		var rangeField strings.Builder
 		var rangeField1 strings.Builder
 		var rangeField2 strings.Builder
+
 		var rangeFieldWhere strings.Builder
 
 		for index, field := range st.Field {
 			rangeField.WriteString(fmt.Sprintf("\t\t%v:  param.%v,\n", field, field))
-			rangeField1.WriteString(fmt.Sprintf("\tobj.%v = param.%v\n", field, field))
 			rangeField2.WriteString(fmt.Sprintf("\t%v\t%v\t%v\n", field, st.FieldType[index], st.Comments[index]))
 			switch st.FieldType[index] {
 			case "string":
+				rangeField1.WriteString(fmt.Sprintf(`
+	if len(param.%v) > 0 {
+		obj.%v = param.%v
+	}				
+`, field, field, field))
 				rangeFieldWhere.WriteString(fmt.Sprintf(`
 		if len(c.%v) > 0 {
 			db = db.Where("%v like ?", "%%"+c.%v+"%%")
@@ -34,6 +39,11 @@ func GenerateModelCode(structType []StructInfo) error {
 			db = db.Where("%v = ?", c.%v)
 		}
 `, field, st.Tsgs[index], field))
+				rangeField1.WriteString(fmt.Sprintf(`
+	if param.%v > 0 {
+		obj.%v = param.%v
+	}				
+`, field, field, field))
 			}
 		}
 
@@ -169,7 +179,7 @@ func (c %vQuery) preload() func(db *gorm.DB) *gorm.DB {
 	return text
 }
 
-func genModelSQL(st StructInfo, text strings.Builder, rangeField strings.Builder, rangeField1 strings.Builder) strings.Builder {
+func genModelSQL(st StructInfo, text strings.Builder, rangeField strings.Builder, rangeField3 strings.Builder) strings.Builder {
 	text.WriteString(fmt.Sprintf("package %s\n\n", st.TableName))
 
 	text.WriteString(fmt.Sprintf("type %sSQLRepo struct {\n\tdb *gorm.DB\n}\n\n", st.LocalName))
@@ -207,7 +217,7 @@ func genModelSQL(st StructInfo, text strings.Builder, rangeField strings.Builder
 	return obj, nil
 }
 
-`, st.LocalName, st.Name, st.Name, st.TableName, rangeField1.String(), st.Name))
+`, st.LocalName, st.Name, st.Name, st.TableName, rangeField3.String(), st.Name))
 
 	text.WriteString(fmt.Sprintf(`func (repo %sSQLRepo) Search(param *serializer.%sSearchParam) ([]%s, uint, error) {
 
