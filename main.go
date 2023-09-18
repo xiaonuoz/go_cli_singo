@@ -9,11 +9,6 @@ import (
 )
 
 func main() {
-	generate.ProjectDir = "./test"
-	err := generate.GenerateModelCode(generate.GetStructInfoArr("./test/model/order.go"))
-	if err != nil {
-		fmt.Println(err)
-	}
 	app := &cli.App{
 		Name:  "singo_make_api",
 		Usage: "make singo project api",
@@ -86,7 +81,7 @@ func main() {
 	}
 
 	// 启动命令行应用程序
-	err = app.Run(os.Args)
+	err := app.Run(os.Args)
 	if err != nil {
 		fmt.Println(err)
 		return
