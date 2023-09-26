@@ -185,15 +185,18 @@ var (
 
 	up := url.Values{}
 	%s
+
+	%s
 	baseURL.RawQuery = up.Encode()
 	resp, err := http.Get(baseURL.String())
 	if err != nil {
 		return nil, err
 	}
 `
-		text.WriteString(fmt.Sprintf(reqString, "Search", st.Name, st.Name, "Search", searchStruct, searchSting, fmt.Sprintf(searchListHttpString, "search"+st.Name, rangeField.String())))
+		text.WriteString(fmt.Sprintf(reqString, "Search", st.Name, st.Name, "Search", searchStruct, searchSting, fmt.Sprintf(searchListHttpString, "search"+st.Name, rangeField.String(), `	up.Add("page", strconv.FormatUint(uint64(param.Page), 10))
+		up.Add("pageSize", strconv.FormatUint(uint64(param.PageSize), 10))`)))
 
-		text.WriteString(fmt.Sprintf(reqString, "List", st.Name, st.Name, "List", listStruct, listStructSting, fmt.Sprintf(searchListHttpString, "list"+st.Name, rangeField.String())))
+		text.WriteString(fmt.Sprintf(reqString, "List", st.Name, st.Name, "List", listStruct, listStructSting, fmt.Sprintf(searchListHttpString, "list"+st.Name, rangeField.String(), "")))
 
 		path := filepath.Join(ProjectDir, "sdk")
 		err := os.MkdirAll(path, 0755)
