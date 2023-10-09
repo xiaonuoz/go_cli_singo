@@ -56,7 +56,8 @@ var (
 		Error string       %s
 	}{}
 	`
-		crudStructSting := fmt.Sprintf(structString, "`json:\"code\"`", modelStruct, "`json:\"data,omitempty\"`", "`json:\"msg\"`", "`json:\"error,omitempty\"`")
+		rudStructSting := fmt.Sprintf(structString, "`json:\"code\"`", modelStruct, "`json:\"data,omitempty\"`", "`json:\"msg\"`", "`json:\"error,omitempty\"`")
+		createStructSting := fmt.Sprintf(structString, "`json:\"code\"`", "interface{}", "`json:\"data,omitempty\"`", "`json:\"msg\"`", "`json:\"error,omitempty\"`")
 		listStructSting := fmt.Sprintf(structString, "`json:\"code\"`", listStruct, "`json:\"data,omitempty\"`", "`json:\"msg\"`", "`json:\"error,omitempty\"`")
 
 		text.WriteString(fmt.Sprintf(`func Get%sByID(id uint) (%s, error) {
@@ -84,7 +85,7 @@ var (
 	return result.Data, nil
 }
 
-`, st.Name, modelStruct, st.Name, crudStructSting))
+`, st.Name, modelStruct, st.Name, rudStructSting))
 
 		reqString := `func %s%s(param *serializer.%s%sParam) (%s, error) {
 	%s
@@ -126,8 +127,44 @@ var (
 	}
 `
 
-		text.WriteString(fmt.Sprintf(reqString, "Create", st.Name, st.Name, "Create", modelStruct, crudStructSting, fmt.Sprintf(crudHttpString, "POST", st.LocalName)))
-		text.WriteString(fmt.Sprintf(reqString, "Modify", st.Name, st.Name, "Modify", modelStruct, crudStructSting, fmt.Sprintf(crudHttpString, "PUT", st.LocalName)))
+		text.WriteString(fmt.Sprintf(`func %s%s(param *serializer.%s%sParam) error {
+			%s
+			%s
+	defer resp.Body.Close()
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return err
+	}
+	
+	err = json.Unmarshal(body, result)
+	if err != nil {
+		return err
+	}
+	
+	if result.Code != 0 {
+		return errors.New(result.Error)
+	}
+		
+	return nil
+}
+		
+`, "Create", st.Name, st.Name, "Create", createStructSting, fmt.Sprintf(`p, err := json.Marshal(param)
+if err != nil {
+	return err
+}
+
+req, err := http.NewRequest("%s", fmt.Sprintf(%sURL, host), bytes.NewBuffer(p))
+if err != nil {
+	return err
+}
+req.Header.Set("Content-Type", "application/json")
+
+resp, err := http.DefaultClient.Do(req)
+if err != nil {
+	return err
+}
+`, "POST", st.LocalName)))
+		text.WriteString(fmt.Sprintf(reqString, "Modify", st.Name, st.Name, "Modify", modelStruct, rudStructSting, fmt.Sprintf(crudHttpString, "PUT", st.LocalName)))
 
 		text.WriteString(fmt.Sprintf(`func %s%s(param *serializer.%s%sParam) error {
 	%s
@@ -165,7 +202,7 @@ var (
 	return nil
 }
 			
-`, "Delete", st.Name, st.Name, "Delete", crudStructSting, "DELETE", st.LocalName))
+`, "Delete", st.Name, st.Name, "Delete", rudStructSting, "DELETE", st.LocalName))
 
 		text.WriteString(fmt.Sprintf(`type %s%sResp struct {
 	%s      []%s.%s          %s

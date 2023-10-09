@@ -186,15 +186,15 @@ func genModelSQL(st StructInfo, text strings.Builder, rangeField strings.Builder
 
 	text.WriteString(fmt.Sprintf("func (repo %sSQLRepo) GetByID(id uint) (*%s, error) {\n\tq := %sQuery{\n\t\tID: id,\n\t}\n\treturn repo.get(q)\n}\n\n", st.LocalName, st.Name, st.TableName))
 
-	text.WriteString(fmt.Sprintf("func (repo %vSQLRepo) Create(param *serializer.%vCreateParam) (*%v, error) {\n", st.LocalName, st.Name, st.Name))
+	text.WriteString(fmt.Sprintf("func (repo %vSQLRepo) Create(param *serializer.%vCreateParam) error {\n", st.LocalName, st.Name))
 	text.WriteString(fmt.Sprintf(`	obj := &%v{
 %v
 	}
 	if err := repo.db.Create(obj).Error; err != nil {
-		return nil, fmt.Errorf("Create %v err:%%v", err)
+		return fmt.Errorf("Create %v err:%%v", err)
 	}
 
-	return repo.GetByID(obj.ID)
+	return nil
 }
 
 `, st.Name, rangeField.String(), st.Name))
