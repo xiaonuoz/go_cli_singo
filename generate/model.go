@@ -219,17 +219,12 @@ func genModelSQL(st StructInfo, text strings.Builder, rangeField strings.Builder
 
 `, st.LocalName, st.Name, st.Name, st.TableName, rangeField3.String(), st.Name))
 
-	text.WriteString(fmt.Sprintf(`func (repo %sSQLRepo) Search(param *serializer.%sSearchParam) ([]%s, uint, error) {
+	text.WriteString(fmt.Sprintf(`func (repo %sSQLRepo) Search(param *serializer.%sSearchParam) ([]%s, error) {
 
 	query := %sQuery{
 %s
 		Limit:        param.PageSize,
 		Offset: (param.Page - 1) * param.PageSize,
-	}
-
-	count, err := repo.count(query)
-	if err != nil {
-		return nil, 0, err
 	}
 
 	var objArr []%s
@@ -239,9 +234,9 @@ func genModelSQL(st StructInfo, text strings.Builder, rangeField strings.Builder
 	}
 
 	if err := db.Find(&objArr).Error; err != nil {
-		return nil, 0, fmt.Errorf("Search %s err: %%v", err)
+		return nil, fmt.Errorf("Search %s err: %%v", err)
 	}
-	return objArr, count, nil
+	return objArr, nil
 }
 
 `, st.LocalName, st.Name, st.Name, st.TableName, rangeField.String(), st.Name, st.Name))
@@ -293,15 +288,15 @@ func genModelSQL(st StructInfo, text strings.Builder, rangeField strings.Builder
 
 `, st.LocalName, st.TableName, st.Name, st.Name, st.Name))
 
-	text.WriteString(fmt.Sprintf(`func (repo %sSQLRepo) count(query %sQuery) (uint, error) {
+	// text.WriteString(fmt.Sprintf(`func (repo %sSQLRepo) count(query %sQuery) (uint, error) {
 
-		var count int64
-		if err := repo.db.Model(&%s{}).Scopes(query.where()).Count(&count).Error; err != nil {
-			return 0, fmt.Errorf("count %s err: %%v", err)
-		}
-		return uint(count), nil
-	}
-	`, st.LocalName, st.TableName, st.Name, st.Name))
+	// 	var count int64
+	// 	if err := repo.db.Model(&%s{}).Scopes(query.where()).Count(&count).Error; err != nil {
+	// 		return 0, fmt.Errorf("count %s err: %%v", err)
+	// 	}
+	// 	return uint(count), nil
+	// }
+	// `, st.LocalName, st.TableName, st.Name, st.Name))
 
 	return text
 }

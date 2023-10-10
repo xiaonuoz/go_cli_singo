@@ -32,12 +32,12 @@ type %s struct {
 	param.Page = pagination.Current
 	param.PageSize = pagination.PageSize
 
-	value, count, err := %s.%sRepo.%s(param)
+	value, err := %s.%sRepo.%s(param)
 	if err != nil {
 		return serializer.Err(serializer.CodeHandlerErr, err)
 	}
 
-	pagination.Total = count
+	pagination.Total = uint(len(value))
 
 	return serializer.ResponseOk(struct {
 			%s []%s.%s %s
