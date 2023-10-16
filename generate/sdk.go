@@ -110,45 +110,30 @@ var (
 
 `
 
-		crudHttpString := `p, err := json.Marshal(param)
-	if err != nil {
-		return nil, err
-	}
+		cmFmt := `func %s%s(param *serializer.%s%sParam) error {
+	%s
+	%s
+defer resp.Body.Close()
+body, err := io.ReadAll(resp.Body)
+if err != nil {
+return err
+}
 
-	req, err := http.NewRequest("%s", fmt.Sprintf(%sURL, host), bytes.NewBuffer(p))
-	if err != nil {
-		return nil, err
-	}
-	req.Header.Set("Content-Type", "application/json")
+err = json.Unmarshal(body, result)
+if err != nil {
+return err
+}
 
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return nil, err
-	}
+if result.Code != 0 {
+return errors.New(result.Error)
+}
+
+return nil
+}
+
 `
 
-		text.WriteString(fmt.Sprintf(`func %s%s(param *serializer.%s%sParam) error {
-			%s
-			%s
-	defer resp.Body.Close()
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return err
-	}
-	
-	err = json.Unmarshal(body, result)
-	if err != nil {
-		return err
-	}
-	
-	if result.Code != 0 {
-		return errors.New(result.Error)
-	}
-		
-	return nil
-}
-		
-`, "Create", st.Name, st.Name, "Create", createStructSting, fmt.Sprintf(`p, err := json.Marshal(param)
+		postPutFmt := `p, err := json.Marshal(param)
 if err != nil {
 	return err
 }
@@ -163,46 +148,11 @@ resp, err := http.DefaultClient.Do(req)
 if err != nil {
 	return err
 }
-`, "POST", st.LocalName)))
-		text.WriteString(fmt.Sprintf(reqString, "Modify", st.Name, st.Name, "Modify", modelStruct, rudStructSting, fmt.Sprintf(crudHttpString, "PUT", st.LocalName)))
+`
 
-		text.WriteString(fmt.Sprintf(`func %s%s(param *serializer.%s%sParam) error {
-	%s
-	p, err := json.Marshal(param)
-	if err != nil {
-		return err
-	}
-
-	req, err := http.NewRequest("%s", fmt.Sprintf(%sURL, host), bytes.NewBuffer(p))
-	if err != nil {
-		return err
-	}
-	req.Header.Set("Content-Type", "application/json")
-
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return err
-	}
-
-	defer resp.Body.Close()
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return err
-	}
-
-	err = json.Unmarshal(body, result)
-	if err != nil {
-		return err
-	}
-
-	if result.Code != 0 {
-		return errors.New(result.Error)
-	}
-
-	return nil
-}
-			
-`, "Delete", st.Name, st.Name, "Delete", rudStructSting, "DELETE", st.LocalName))
+		text.WriteString(fmt.Sprintf(cmFmt, "Create", st.Name, st.Name, "Create", createStructSting, fmt.Sprintf(postPutFmt, "POST", st.LocalName)))
+		text.WriteString(fmt.Sprintf(cmFmt, "Modify", st.Name, st.Name, "Modify", createStructSting, fmt.Sprintf(postPutFmt, "PUT", st.LocalName)))
+		text.WriteString(fmt.Sprintf(cmFmt, "Delete", st.Name, st.Name, "Delete", createStructSting, fmt.Sprintf(postPutFmt, "DELETE", st.LocalName)))
 
 		text.WriteString(fmt.Sprintf(`type %s%sResp struct {
 	%s      []%s.%s          %s

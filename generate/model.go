@@ -199,25 +199,16 @@ func genModelSQL(st StructInfo, text strings.Builder, rangeField strings.Builder
 
 `, st.Name, rangeField.String(), st.Name))
 
-	text.WriteString(fmt.Sprintf(`func (repo *%sSQLRepo) Modify(param *serializer.%sModifyParam) (*%s, error) {
-
-	query := %sQuery{
-		ID: param.ID,
-	}
-	obj, err := repo.get(query)
-	if err != nil {
-		return nil, err
-	}
-
+	text.WriteString(fmt.Sprintf(`func (repo *%sSQLRepo) Modify(param *serializer.%sModifyParam) error {
+	if err := repo.db.Updates(%s{
 %v
-
-	if err := repo.db.Save(obj).Error; err != nil {
-		return nil, fmt.Errorf("Modify %v err: %%v", err)
+	}).Error; err != nil {
+		return fmt.Errorf("Modify %v err: %%v", err)
 	}
-	return obj, nil
+	return nil
 }
 
-`, st.LocalName, st.Name, st.Name, st.TableName, rangeField3.String(), st.Name))
+`, st.LocalName, st.Name, st.Name, rangeField.String(), st.Name))
 
 	text.WriteString(fmt.Sprintf(`func (repo *%sSQLRepo) Search(param *serializer.%sSearchParam) ([]%s, error) {
 

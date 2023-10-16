@@ -56,8 +56,8 @@ type %s struct {
 }
 
 `
-		text.WriteString(fmt.Sprintf(funcFormat, st.Name, "List", st.Name, "List", st.TableName, st.Name, "List"))
-		text.WriteString(fmt.Sprintf(`func (s *%s) %s(param *serializer.%s%sParam) *serializer.Response {
+
+		cmFormat := `func (s *%s) %s(param *serializer.%s%sParam) *serializer.Response {
 	err := %s.%sRepo.%s(param)
 	if err != nil {
 		return serializer.Err(serializer.CodeHandlerErr, err)
@@ -65,8 +65,10 @@ type %s struct {
 	return serializer.ResponseOk(nil)
 }
 
-`, st.Name, "Create", st.Name, "Create", st.TableName, st.Name, "Create"))
-		text.WriteString(fmt.Sprintf(funcFormat, st.Name, "Modify", st.Name, "Modify", st.TableName, st.Name, "Modify"))
+`
+		text.WriteString(fmt.Sprintf(funcFormat, st.Name, "List", st.Name, "List", st.TableName, st.Name, "List"))
+		text.WriteString(fmt.Sprintf(cmFormat, st.Name, "Create", st.Name, "Create", st.TableName, st.Name, "Create"))
+		text.WriteString(fmt.Sprintf(cmFormat, st.Name, "Modify", st.Name, "Modify", st.TableName, st.Name, "Modify"))
 		text.WriteString(fmt.Sprintf(`func (s *%s) %s(param *serializer.%s%sParam) *serializer.Response {
 	err := %s.%sRepo.%s(param)
 	if err != nil {
