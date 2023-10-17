@@ -200,7 +200,7 @@ func genModelSQL(st StructInfo, text strings.Builder, rangeField strings.Builder
 `, st.Name, rangeField.String(), st.Name))
 
 	text.WriteString(fmt.Sprintf(`func (repo *%sSQLRepo) Modify(param *serializer.%sModifyParam) error {
-	if err := repo.db.Updates(%s{
+	if err := repo.db.Where("id=?", param.ID).Updates(%s{
 %v
 	}).Error; err != nil {
 		return fmt.Errorf("Modify %v err: %%v", err)
