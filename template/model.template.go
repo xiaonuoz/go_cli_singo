@@ -68,10 +68,6 @@ func Create(param *Create${Name}Param) (*${Name}, error) {
 	return data, nil
 }
 
-func Delete(param *Delete${Name}Param) (err error) {
-	return db.DB().Where("id = ?", param.Id).Delete(&${Name}{}).Error
-}
-
 func Update(param *Update${Name}Param) error {
 	if err := db.DB().Where("id = ?", param.Id).Updates(&${Name}{
 	${CreateBody}
@@ -80,6 +76,10 @@ func Update(param *Update${Name}Param) error {
 	}
 
 	return nil
+}
+
+func Delete(param *Delete${Name}Param) (err error) {
+	return db.DB().Where("id = ?", param.Id).Delete(&${Name}{}).Error
 }
 `
 

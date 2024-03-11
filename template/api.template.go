@@ -23,7 +23,7 @@ type (
 	}
 )
 
-func New${Name}Svc() I${LocalName}API {
+func New${Name}Svc() I${Name}API {
 	return &${LocalName}API{}
 }
 
@@ -107,7 +107,7 @@ func (api *${LocalName}API) Delete(ctx context.Context, param *${TableName}.Dele
 		return errs.NewError(errcode.Code${Name}DeleteErr, "id不能为0")
 	}
 
-	err = report_sub.Delete(param)
+	err = ${TableName}.Delete(param)
 
 	if err != nil {
 		return errs.NewError(errcode.Code${Name}DeleteErr, err.Error())
