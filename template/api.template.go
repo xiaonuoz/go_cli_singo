@@ -99,7 +99,7 @@ func (api *${LocalName}API) Update(ctx context.Context, param *${TableName}.Upda
 // @Description
 // @Accept application/json
 // @Param Authorization header string true "授权访问的token"
-// @Param data body DelParam true "请求参数"
+// @Param data body ${TableName}.Delete${Name}Param true "请求参数"
 // @Success 200
 // @Router 路由地址 [delete]
 func (api *${LocalName}API) Delete(ctx context.Context, param *${TableName}.Delete${Name}Param) (err error) {
