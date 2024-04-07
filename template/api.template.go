@@ -45,8 +45,8 @@ func (api *${LocalName}API) List(ctx context.Context, param *${TableName}.List${
 		Data: result,
 
 		Total:    int(total),
-		PageSize: param.PageSize,
-		PageNum:  param.PageNum,
+		Page: param.Page,
+		Size: param.Size,
 	}, nil
 }
 

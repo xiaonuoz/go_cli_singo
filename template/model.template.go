@@ -40,18 +40,18 @@ func GetList(param *List${Name}Param) (res []*${Name}, total int64, err error) {
 	model := db.Model(&${Name}{}).Scopes(param.where(), param.order(), param.preload())
 
 	// 分页
-	if param.PageNum <= 0 {
-		param.PageNum = 1
+	if param.Page <= 0 {
+		param.Page = 1
 	}
-	if param.PageSize < 1 {
-		param.PageSize = 10
+	if param.Size < 1 {
+		param.Size = 10
 	}
 	err = model.Count(&total).Error
 	if err != nil {
 		return
 	}
 
-	err = model.Offset(param.PageSize * (param.PageNum - 1)).Limit(param.PageSize).Find(&res).Error
+	err = model.Offset(param.Page * (param.Size - 1)).Limit(param.Size).Find(&res).Error
 	return
 }
 
