@@ -51,7 +51,7 @@ func GetList(param *List${Name}Param) (res []*${Name}, total int64, err error) {
 		return
 	}
 
-	err = model.Offset(param.Page * (param.Size - 1)).Limit(param.Size).Find(&res).Error
+	err = model.Offset(param.Size * (param.Page - 1)).Limit(param.Size).Find(&res).Error
 	return
 }
 

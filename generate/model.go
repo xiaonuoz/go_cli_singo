@@ -52,14 +52,14 @@ func GenerateModelCode(structType []StructInfo) error {
 		paramgo := strings.ReplaceAll(template.ParamTemplate, "${TableName}", st.TableName)
 		paramgo = strings.ReplaceAll(paramgo, "${Name}", st.Name)
 		paramgo = strings.ReplaceAll(paramgo, "${ParamBody}", paramField.String())
-		paramgo = strings.ReplaceAll(paramgo, "${Page}", fmt.Sprintf(`Page int   %s// 查询条数
-	Size  int   %s// 页码
+		paramgo = strings.ReplaceAll(paramgo, "${Page}", fmt.Sprintf(`Page int   %s// 页码
+	Size  int   %s// 查询条数
 	`, "`json:\"page\" form:\"page\"`", "`json:\"size\" form:\"size\"`"))
 		paramgo = strings.ReplaceAll(paramgo, "${ID}", fmt.Sprintf(`Id uint64   %s`, "`json:\"id\" form:\"id\"`"))
 		paramgo = strings.ReplaceAll(paramgo, "${whereBody}", whereField.String())
 		paramgo = strings.ReplaceAll(paramgo, "${RespData}", fmt.Sprintf(`		Data     []*%s %s      //列表
-		Page int                     %s //查询条数
-		Size  int                     %s  //页码
+		Page int                     %s //页码
+		Size  int                     %s  //查询条数
 		Total    int                     %s     //总数`, st.Name, "`json:\"data\" form:\"data\"`", "`json:\"page\" form:\"page\"`", "`json:\"size\" form:\"size\"`", "`json:\"total\" form:\"total\"`"))
 
 		paramFile, _ := os.Create("./param.go")

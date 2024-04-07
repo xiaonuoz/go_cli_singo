@@ -6,7 +6,17 @@
             "type": "go",
             "request": "launch",
             "mode": "auto",
-            "program": "${fileDirname}/main.go"
+            "program": "${fileDirname}/main.go",
+            "args": [
+                "model",
+                // ".idea/config/dengbao-auth.toml"
+                // "../../../.idea/config/dengbao-auth.toml",
+                // "../../../.idea/config/dengbao-cloud-computer.toml",
+                // "../../../.idea/config/dengbao-log-debug.toml",
+                "./test/model/order.go",
+                // "../../../.idea/config/dengbao-node.toml",
+                // "/root/dengbao/dengbao-cloud/.idea/config/dengbao-ddos.toml"
+            ]
         }
     ]
 }
